@@ -106,6 +106,7 @@
   #btnReload{ right:96px; bottom:180px; font-size:18px; }
   #btnFly   { right:166px; bottom:180px; font-size:20px; }
   #btnDown  { right:166px; bottom:106px; display:none; }
+  #btnRun   { right:236px; bottom:180px; font-size:15px; }
   .tbtn.on { background:rgba(91,158,60,.75); border-color:#fff; }
 </style>
 </head>
@@ -118,13 +119,13 @@
   <div class="panel">
     <b>Kontrol (PC)</b><br>
     W A S D — bergerak • Spasi — lompat • Shift — lari<br>
-    <b>F — terbang</b> (Spasi naik, Shift turun)<br>
+    <b>F — terbang</b> (Spasi naik, Shift turun) • <b>B — atur kecepatan lari ⚡ (x1/x1.5/x2/x3)</b><br>
     Mouse — lihat • Scroll / 0-9 — pilih item<br>
     Klik kiri — hancurkan / <b>tembak</b> • Klik kanan — pasang<br>
     R — isi ulang pistol • ESC — keluar mode main<br><br>
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
-    ✈ mode terbang • ⬇ turun • ↻ isi ulang<br><br>
+    ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
     <b style="color:#ff8a80">⚠ 8 BOSS menantimu: Golem Batu, Boss Mojang, Golem Merah, Warden, Wither, Golem Jamur, Ender Dragon &amp; WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
@@ -165,6 +166,7 @@
   <div class="tbtn" id="btnReload">↻</div>
   <div class="tbtn" id="btnFly">✈</div>
   <div class="tbtn" id="btnDown">⬇</div>
+  <div class="tbtn" id="btnRun">⚡x1</div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
@@ -1550,6 +1552,17 @@ function toggleFly(){
   btnFlyEl.classList.toggle("on", player.fly);
   btnDownEl.style.display = player.fly ? "flex" : "none";
 }
+/* ---------- pengatur kecepatan lari: x1 -> x1.5 -> x2 -> x3 ---------- */
+const SPEED_LEVELS = [1, 1.5, 2, 3];
+let speedIdx = 0, runMult = 1;
+const btnRunEl = document.getElementById("btnRun");
+function cycleRunSpeed(){
+  speedIdx = (speedIdx + 1) % SPEED_LEVELS.length;
+  runMult = SPEED_LEVELS[speedIdx];
+  playTone(500 + speedIdx*250, 0.1, "square", 0.12);
+  btnRunEl.classList.toggle("on", runMult > 1);
+  btnRunEl.textContent = "⚡x" + runMult;
+}
 
 document.addEventListener("keydown", (e) => {
   keys[e.code] = true;
@@ -1560,6 +1573,7 @@ document.addEventListener("keydown", (e) => {
   }
   if (e.code === "KeyR" && ITEMS[slot].kind === "gun") reloadGun();
   if (e.code === "KeyF" && !e.repeat && playing && !player.dead) toggleFly();
+  if (e.code === "KeyB" && !e.repeat && playing && !player.dead) cycleRunSpeed();
 });
 document.addEventListener("keyup", (e) => keys[e.code] = false);
 // bersihkan semua tombol saat fokus hilang (mencegah karakter "jalan sendiri")
@@ -1684,6 +1698,8 @@ if (isTouch){
   holdRepeat("btnPlace", placeBlock, 260);
   btnFlyEl.addEventListener("touchstart",
     (e)=>{ if (playing && !player.dead) toggleFly(); e.preventDefault(); }, {passive:false});
+  btnRunEl.addEventListener("touchstart",
+    (e)=>{ if (playing && !player.dead) cycleRunSpeed(); e.preventDefault(); }, {passive:false});
   btnDownEl.addEventListener("touchstart",
     (e)=>{ player.flyDown = true; e.preventDefault(); }, {passive:false});
   btnDownEl.addEventListener("touchend", ()=> player.flyDown = false);
@@ -1716,7 +1732,8 @@ function step(dt){
   }
 
   const water = inWater() && !player.fly;
-  const speed = player.fly ? 9 : ((keys.ShiftLeft || keys.ShiftRight) ? 6.2 : 4.3);
+  const speed = (player.fly ? 9 : ((keys.ShiftLeft || keys.ShiftRight) ? 6.2 : 4.3))
+    * runMult; // pengali dari tombol pengatur kecepatan lari
   let mx = 0, mz = 0;
   if (!player.dead){
     if (keys.KeyW || keys.ArrowUp)    mz -= 1;  // maju
@@ -1834,6 +1851,7 @@ function loop(now){
     "<br>XYZ: " + player.pos.x.toFixed(1) + ", " + player.pos.y.toFixed(1) + ", " + player.pos.z.toFixed(1) +
     "<br>Item: " + itemName +
     (player.fly ? "<br>\u2708 Mode Terbang: ON" : "") +
+    (runMult > 1 ? "<br>\u26a1 Kecepatan Lari: x" + runMult : "") +
     "<br>Boss dikalahkan: " + boss.kills + " / " + BOSS_ROSTER.length +
     (boss.allDead ? " \u2705 MENANG!" : "");
   if (item.kind === "gun"){
