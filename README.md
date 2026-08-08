@@ -2,9 +2,10 @@
 
 Game voxel 3D bergaya Minecraft dalam satu file HTML (Three.js).
 Fitur: dunia acak 5 pulau bertema (utama, salju, kota kuno, jamur, End),
-portal antar pulau, 8 boss (Golem Batu, Boss Mojang, Golem Merah, Warden,
-Wither, Golem Jamur, Ender Dragon, Witherzilla), pistol, mode terbang,
-kontrol PC + mobile.
+portal antar pulau, 13 boss (Golem Batu, Boss Mojang, Golem Merah, Sea Eater,
+Warden, Wither, El Gran Maja, Golem Jamur, The Bloop, Ender Dragon,
+Sea Hand Monster, Ningen, Witherzilla), boss laut yang mati jika terdampar
+di darat, pistol, mode terbang, kontrol PC + mobile.
 
 ## Deploy ke InsForge (Sites)
 

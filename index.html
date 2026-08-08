@@ -126,8 +126,9 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
-    <b style="color:#ff8a80">⚠ 8 BOSS menantimu: Golem Batu, Boss Mojang, Golem Merah, Warden, Wither, Golem Jamur, Ender Dragon &amp; WITHERZILLA!</b><br>
+    <b style="color:#ff8a80">⚠ 13 BOSS menantimu: Golem Batu, Boss Mojang, Golem Merah, Sea Eater, Warden, Wither, El Gran Maja, Golem Jamur, The Bloop, Ender Dragon, Sea Hand Monster, Ningen &amp; WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
+    <b style="color:#8ad4ff">🌊 Boss laut hidup di lautan antar pulau — mereka mati jika terdampar di darat!</b><br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
   </div>
   <button id="playBtn">▶ MAIN</button>
@@ -833,6 +834,46 @@ const BOSS_TYPES = {
     hw:1.4, hh:3.5, color:0xa050e0, roar:playRoar,
     build:()=>buildDragonModel(), locName:"DI PULAU END", locPos:{x:104, z:104},
   },
+  seaeater: {
+    name:"SEA EATER", baseHp:180, speed:4.5,
+    melee:5, meleeRange:3.2, meleeHit:3.8,
+    projCd:2.6, projMin:2, projMax:30, projStyle:"water", projDmg:3, projSpeed:16, burst:2,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1.2,
+    hw:0.8, hh:2.2, color:0x4a6b7d, roar:playRoar,
+    build:()=>buildSeaEaterModel(), locName:"DI LAUT TIMUR LAUT", locPos:{x:88, z:40},
+  },
+  elgranmaja: {
+    name:"EL GRAN MAJA", baseHp:280, speed:4.0,
+    melee:6, meleeRange:3.6, meleeHit:4.2,
+    projCd:2.4, projMin:2, projMax:34, projStyle:"water", projDmg:4, projSpeed:17, burst:1,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1,
+    hw:0.9, hh:2.4, color:0x2e5e46, roar:playRoar,
+    build:()=>buildGranMajaModel(), locName:"DI LAUT BARAT LAUT", locPos:{x:40, z:40},
+  },
+  thebloop: {
+    name:"THE BLOOP", baseHp:340, speed:3.0,
+    melee:6, meleeRange:4.2, meleeHit:5.0,
+    projCd:2.8, projMin:3, projMax:40, projStyle:"sonic", projDmg:4, projSpeed:18, burst:1,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:2,
+    hw:1.4, hh:4.0, color:0x16222e, roar:playRoar,
+    build:()=>buildBloopModel(), locName:"DI LAUT TENGGARA", locPos:{x:88, z:88},
+  },
+  seahand: {
+    name:"SEA HAND MONSTER", baseHp:320, speed:3.6,
+    melee:7, meleeRange:4.2, meleeHit:5.0,
+    projCd:2.8, projMin:3, projMax:36, projStyle:"ink", projDmg:4, projSpeed:15, burst:3,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1.5,
+    hw:1.0, hh:5.0, color:0x5c7a6a, roar:playRoar,
+    build:()=>buildSeaHandModel(), locName:"DI LAUT BARAT DAYA", locPos:{x:40, z:88},
+  },
+  ningen: {
+    name:"NINGEN", baseHp:380, speed:4.2,
+    melee:6, meleeRange:3.4, meleeHit:4.0,
+    projCd:2.2, projMin:2, projMax:38, projStyle:"water", projDmg:4, projSpeed:18, burst:2,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1,
+    hw:0.8, hh:3.4, color:0xe8ecec, roar:playRoar,
+    build:()=>buildNingenModel(), locName:"DI LAUT UTARA", locPos:{x:64, z:16},
+  },
   witherzilla: {
     name:"WITHERZILLA", baseHp:500, speed:2.2,
     melee:7, meleeRange:5.5, meleeHit:6.5,
@@ -842,7 +883,8 @@ const BOSS_TYPES = {
     build:()=>buildWitherzillaModel(), locName:"DI PULAU UTAMA", locPos:{x:74, z:64},
   },
 };
-const BOSS_ROSTER = ["golem","mojang","redgolem","warden","wither","shroomgolem","dragon","witherzilla"];
+const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","warden","wither","elgranmaja",
+  "shroomgolem","thebloop","dragon","seahand","ningen","witherzilla"];
 const boss = {
   alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
   group:null, parts:null, flashMats:[],
@@ -1053,6 +1095,139 @@ function buildDragonModel(){
   g.add(body, neck, head, snout, eyeL, eyeR, tail1, tail2, armL, armR, legL, legR);
   return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[dark, gray, wingM] };
 }
+function buildSeaEaterModel(){
+  // hiu monster pemakan laut
+  const g = new THREE.Group();
+  const gray = lam(0x4a6b7d), belly = lam(0xb8c8d0), fin = lam(0x3a5563);
+  const teeth = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const eye = new THREE.MeshBasicMaterial({ color:0x101418 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.0, 3.0), gray);
+  body.position.y = 1.2;
+  const under = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.4, 2.6), belly);
+  under.position.y = 0.75;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.85, 1.1), gray);
+  head.position.set(0, 1.2, 1.95); head.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.16, 0.25), teeth);
+  mouth.position.set(0, 0.95, 2.45); mouth.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.12), eye);
+  eyeL.position.set(-0.5, 1.4, 1.9); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.5; eyeR.userData.head = true;
+  const dorsal = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.9, 0.9), fin);
+  dorsal.position.set(0, 2.0, 0.1);
+  const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.16, 1.1, 0.7), fin);
+  tailFin.position.set(0, 1.4, -1.75);
+  const armL = new THREE.Group();
+  const finL = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.14, 0.6), fin);
+  finL.position.x = -0.75;
+  armL.add(finL); armL.position.set(-0.5, 1.0, 0.8);
+  const armR = new THREE.Group();
+  const finR = finL.clone(); finR.position.x = 0.75;
+  armR.add(finR); armR.position.set(0.5, 1.0, 0.8);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, under, head, mouth, eyeL, eyeR, dorsal, tailFin, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[gray, belly, fin] };
+}
+function buildGranMajaModel(){
+  // ular laut raksasa El Gran Maja
+  const g = new THREE.Group();
+  const green = lam(0x2e5e46), dark = lam(0x224936), ridge = lam(0x1a3828);
+  const eye = new THREE.MeshBasicMaterial({ color:0xffe14d });
+  for (let i=0; i<4; i++){
+    const seg = new THREE.Mesh(new THREE.BoxGeometry(0.85 - i*0.1, 0.8 - i*0.08, 1.4), i%2 ? dark : green);
+    seg.position.set(0, 1.1 + Math.sin(i*1.3)*0.15, 0.4 - i*1.35);
+    g.add(seg);
+    const rd = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.4, 1.0), ridge);
+    rd.position.set(0, 1.65 + Math.sin(i*1.3)*0.15, 0.4 - i*1.35);
+    g.add(rd);
+  }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.95, 1.25), green);
+  head.position.set(0, 1.45, 1.75); head.userData.head = true;
+  const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.3, 1.0), dark);
+  jaw.position.set(0, 1.0, 1.9); jaw.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.12), eye);
+  eyeL.position.set(-0.35, 1.7, 2.2); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.35; eyeR.userData.head = true;
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(head, jaw, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[green, dark, ridge] };
+}
+function buildBloopModel(){
+  // The Bloop: raksasa abisal gelap bersuara menggelegar
+  const g = new THREE.Group();
+  const dark = lam(0x16222e), darker = lam(0x0d1620);
+  const eye = new THREE.MeshBasicMaterial({ color:0xd8f0ff });
+  const teeth = new THREE.MeshBasicMaterial({ color:0xcfe0e8 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.2, 3.4), dark);
+  body.position.y = 2.0;
+  const back = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.4, 1.6), darker);
+  back.position.set(0, 2.4, -2.2);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.7, 1.0), darker);
+  head.position.set(0, 2.1, 2.0); head.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.22, 0.2), teeth);
+  mouth.position.set(0, 1.45, 2.55); mouth.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.12), eye);
+  eyeL.position.set(-0.75, 2.7, 2.5); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.75; eyeR.userData.head = true;
+  const armL = new THREE.Group();
+  const finL = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.2, 1.0), darker);
+  finL.position.x = -1.1;
+  armL.add(finL); armL.position.set(-1.3, 1.5, 0.4);
+  const armR = new THREE.Group();
+  const finR = finL.clone(); finR.position.x = 1.1;
+  armR.add(finR); armR.position.set(1.3, 1.5, 0.4);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, back, head, mouth, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[dark, darker] };
+}
+function buildSeaHandModel(){
+  // tangan raksasa yang muncul dari laut
+  const g = new THREE.Group();
+  const skin = lam(0x5c7a6a), dark = lam(0x47604f);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.4, 1.5), dark);
+  arm.position.y = 1.2;
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(1.9, 1.3, 0.75), skin);
+  palm.position.y = 3.0; palm.userData.head = true;
+  g.add(arm, palm);
+  for (let i=0; i<4; i++){
+    const f = new THREE.Mesh(new THREE.BoxGeometry(0.32, 1.3 - Math.abs(i-1.5)*0.18, 0.4), skin);
+    f.position.set(-0.68 + i*0.45, 4.2, 0); f.userData.head = true;
+    g.add(f);
+  }
+  const thumb = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.9, 0.4), skin);
+  thumb.position.set(1.15, 3.3, 0); thumb.rotation.z = -0.5; thumb.userData.head = true;
+  g.add(thumb);
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head:palm}, flashMats:[skin, dark] };
+}
+function buildNingenModel(){
+  // Ningen: humanoid paus putih dari Antartika
+  const g = new THREE.Group();
+  const white = lam(0xe8ecec), pale = lam(0xd8dede);
+  const eye = new THREE.MeshBasicMaterial({ color:0x14181c });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.8, 0.85), white);
+  body.position.y = 1.8;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.85, 0.85), pale);
+  head.position.y = 3.1; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.12, 0.05), eye);
+  eyeL.position.set(-0.2, 3.2, 0.45); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.2; eyeR.userData.head = true;
+  const armL = new THREE.Group();
+  const flipL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.5, 0.55), pale);
+  flipL.position.y = -0.65;
+  armL.add(flipL); armL.position.set(-0.75, 2.5, 0);
+  const armR = new THREE.Group();
+  armR.add(flipL.clone()); armR.position.set(0.75, 2.5, 0);
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.9, 0.7), white);
+  tail.position.set(0, 0.5, -0.2);
+  const fluke = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.22, 0.8), pale);
+  fluke.position.set(0, 0.15, -0.6);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, head, eyeL, eyeR, armL, armR, tail, fluke, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[white, pale] };
+}
 
 function spawnBoss(){
   boss.type = BOSS_ROSTER[boss.idx];
@@ -1069,8 +1244,11 @@ function spawnBoss(){
     sx = Math.max(3, Math.min(WORLD-4, sx));
     sz = Math.max(3, Math.min(WORLD-4, sz));
   }
-  boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0), sz+0.5);
-  boss.vy = 0; boss.onGround = false;
+  if (boss.def.aquatic)
+    boss.pos.set(sx+0.5, WATER_LEVEL - (boss.def.depth || 1), sz+0.5);
+  else
+    boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0), sz+0.5);
+  boss.vy = 0; boss.onGround = false; boss.beachT = 0;
   boss.maxHp = boss.def.baseHp;
   boss.hp = boss.maxHp;
   boss.dying = false; boss.dieT = 0;
@@ -1116,12 +1294,16 @@ const skullMat = new THREE.MeshBasicMaterial({ color:0x33333d });
 const sonicMat = new THREE.MeshBasicMaterial({ color:0x35e8ff });
 const dragMat  = new THREE.MeshBasicMaterial({ color:0xb45cf0 });
 const sporeMat = new THREE.MeshBasicMaterial({ color:0xe86ad0 });
+const waterMat = new THREE.MeshBasicMaterial({ color:0x3b8bd4 });
+const inkMat   = new THREE.MeshBasicMaterial({ color:0x1a2430 });
 const PROJ_LOOK = {
   fire:   { geo:fireGeo,  mat:fireMat,  color:0xff7722, tone:520 },
   skull:  { geo:skullGeo, mat:skullMat, color:0x33333d, tone:380 },
   sonic:  { geo:skullGeo, mat:sonicMat, color:0x35e8ff, tone:700 },
   dragon: { geo:fireGeo,  mat:dragMat,  color:0xb45cf0, tone:600 },
   spore:  { geo:skullGeo, mat:sporeMat, color:0xe86ad0, tone:460 },
+  water:  { geo:skullGeo, mat:waterMat, color:0x3b8bd4, tone:480 },
+  ink:    { geo:skullGeo, mat:inkMat,   color:0x1a2430, tone:300 },
 };
 
 function bossThrow(){
@@ -1205,7 +1387,7 @@ function updateBoss(dt, time){
   if (boss.dying){
     boss.dieT -= dt;
     boss.group.rotation.x = (1.2-boss.dieT)/1.2 * (Math.PI/2);
-    if (boss.def.fly)
+    if (boss.def.fly || boss.def.aquatic)
       boss.pos.y = Math.max(terrainH(boss.pos.x, boss.pos.z)+1, boss.pos.y - 5*dt);
     boss.group.position.copy(boss.pos);
     if (boss.dieT <= 0.6 && boss.dieT + dt > 0.6)
@@ -1262,6 +1444,28 @@ function updateBoss(dt, time){
     const targetY = engaged ? Math.max(gh+2, player.pos.y + def.hover) : gh + def.hover;
     boss.pos.y += (targetY - boss.pos.y) * Math.min(1, dt*2);
     boss.vy = 0; boss.onGround = false;
+  } else if (def.aquatic){
+    // boss laut: berenang mengejar, hanya lewat kolom yang masih air
+    if (engaged && dist > 2.2 && boss.attackT <= 0){
+      const nx = dx/dist, nz = dz/dist;
+      const tx = boss.pos.x + nx*def.speed*dt;
+      const tz = boss.pos.z + nz*def.speed*dt;
+      if (terrainH(tx, boss.pos.z) < WATER_LEVEL) boss.pos.x = tx;
+      if (terrainH(boss.pos.x, tz) < WATER_LEVEL) boss.pos.z = tz;
+      moving = 1;
+    }
+    boss.pos.x = Math.max(2, Math.min(WORLD-2, boss.pos.x));
+    boss.pos.z = Math.max(2, Math.min(WORLD-2, boss.pos.z));
+    const swimY = WATER_LEVEL - (def.depth || 1);
+    boss.pos.y += (swimY - boss.pos.y) * Math.min(1, dt*2);
+    boss.vy = 0; boss.onGround = false;
+    // ATURAN: boss laut mati jika ke darat (terdampar = HP terkuras cepat)
+    if (terrainH(boss.pos.x, boss.pos.z) >= WATER_LEVEL){
+      boss.beachT = (boss.beachT || 0) + dt;
+      hurtBoss(boss.maxHp * 0.25 * dt);
+      if (Math.random() < dt*6)
+        spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), 0x3b8bd4, 3, 2);
+    } else boss.beachT = 0;
   } else {
     // gerak mendekat di darat
     if (engaged && dist > 2.0 && boss.attackT <= 0){
@@ -1285,8 +1489,8 @@ function updateBoss(dt, time){
     }
   }
 
-  // serangan jarak dekat (boss terbang pakai jarak 3D)
-  const meleeDist = def.fly ? dist3 : dist;
+  // serangan jarak dekat (boss terbang/laut pakai jarak 3D)
+  const meleeDist = (def.fly || def.aquatic) ? dist3 : dist;
   if (engaged && def.meleeRange > 0 && meleeDist < def.meleeRange &&
       boss.attackCd <= 0 && boss.attackT <= 0){
     boss.attackT = 0.7; boss.attackCd = 1.5;
@@ -1297,7 +1501,8 @@ function updateBoss(dt, time){
     boss.attackT -= dt;
     if (prev > 0.32 && boss.attackT <= 0.32 && !player.dead){
       const hx = Math.hypot(player.pos.x-boss.pos.x, player.pos.z-boss.pos.z);
-      const hd = def.fly ? Math.hypot(hx, (player.pos.y+1)-(boss.pos.y+def.hh*0.5)) : hx;
+      const hd = (def.fly || def.aquatic)
+        ? Math.hypot(hx, (player.pos.y+1)-(boss.pos.y+def.hh*0.5)) : hx;
       if (hd < def.meleeHit) damagePlayer(def.melee, boss.pos);
       spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,0.3,0)), 0x8a6440, 8, 4);
     }
@@ -1323,7 +1528,7 @@ function updateBoss(dt, time){
   }
 
   // animasi
-  if (def.fly){
+  if (def.fly || def.aquatic){
     const flap = Math.sin(time*5) * 0.6;
     boss.parts.armL.rotation.z = 0.25 + flap;
     boss.parts.armR.rotation.z = -0.25 - flap;
