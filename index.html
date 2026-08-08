@@ -126,7 +126,7 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
-    <b style="color:#ff8a80">⚠ 13 BOSS menantimu: Golem Batu, Boss Mojang, Golem Merah, Sea Eater, Warden, Wither, El Gran Maja, Golem Jamur, The Bloop, Ender Dragon, Sea Hand Monster, Ningen &amp; WITHERZILLA!</b><br>
+    <b style="color:#ff8a80">⚠ 22 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Raja Laba-Laba, Ninja, Kraken, Godzilla, Ghidorah, Kembaran Jahat, sampai WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
     <b style="color:#8ad4ff">🌊 Boss laut hidup di lautan antar pulau — mereka mati jika terdampar di darat!</b><br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
@@ -876,6 +876,78 @@ const BOSS_TYPES = {
     hw:0.8, hh:3.4, color:0xe8ecec, roar:playRoar,
     build:()=>buildNingenModel(), locName:"DI LAUT UTARA", locPos:{x:64, z:16},
   },
+  spider: {
+    name:"RAJA LABA-LABA", baseHp:200, speed:4.2,
+    melee:5, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.2, projMin:4, projMax:24, projStyle:"web", projDmg:3, projSpeed:18, burst:1,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.9, hh:2.0, color:0x2f2233, roar:playRoar,
+    build:()=>buildSpiderModel(), locName:"DI DEKATMU", locPos:null,
+  },
+  slime: {
+    name:"SLIME MATA BANYAK", baseHp:260, speed:3.2,
+    melee:5, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.6, projMin:4, projMax:24, projStyle:"slime", projDmg:3, projSpeed:14, burst:2,
+    canTeleport:false, fly:false, hover:0,
+    hw:1.1, hh:2.4, color:0x58c93a, roar:playRoar,
+    build:()=>buildSlimeModel(), locName:"DI PULAU JAMUR", locPos:{x:30, z:98},
+  },
+  ninja: {
+    name:"NINJA", baseHp:280, speed:5.0,
+    melee:6, meleeRange:2.8, meleeHit:3.4,
+    projCd:2.0, projMin:4, projMax:28, projStyle:"shuriken", projDmg:2, projSpeed:22, burst:3,
+    canTeleport:true, fly:false, hover:0,
+    hw:0.6, hh:2.4, color:0x1a2438, roar:playRoar,
+    build:()=>buildNinjaModel(), locName:"DI PULAU SALJU", locPos:{x:16, z:30},
+  },
+  shadow: {
+    name:"SHADOW", baseHp:300, speed:4.5,
+    melee:6, meleeRange:2.8, meleeHit:3.4,
+    projCd:2.4, projMin:5, projMax:30, projStyle:"skull", projDmg:3, projSpeed:16, burst:2,
+    canTeleport:true, fly:false, hover:0,
+    hw:0.6, hh:2.6, color:0x14101e, roar:playRoar,
+    build:()=>buildShadowModel(), locName:"DI KOTA KUNO", locPos:{x:110, z:20},
+  },
+  kraken: {
+    name:"KRAKEN", baseHp:400, speed:3.4,
+    melee:7, meleeRange:4.5, meleeHit:5.2,
+    projCd:2.6, projMin:3, projMax:36, projStyle:"ink", projDmg:4, projSpeed:15, burst:3,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1.5,
+    hw:1.4, hh:4.5, color:0x6a2a4a, roar:playRoar,
+    build:()=>buildKrakenModel(), locName:"DI LAUT DEKAT PULAU JAMUR", locPos:{x:24, z:86},
+  },
+  sunboss: {
+    name:"MATAHARI LASER", baseHp:320, speed:4.0,
+    melee:0, meleeRange:0, meleeHit:0,
+    projCd:2.0, projMin:2, projMax:44, projStyle:"laser", projDmg:4, projSpeed:30, burst:3,
+    canTeleport:false, fly:true, hover:14, needsDay:true,
+    hw:1.6, hh:3.0, color:0xffb020, roar:playRoar,
+    build:()=>buildSunBossModel(), locName:"DI LANGIT (PAGI HARI)", locPos:null,
+  },
+  evilclone: {
+    name:"KEMBARAN JAHAT", baseHp:350, speed:4.6,
+    melee:7, meleeRange:2.8, meleeHit:3.4,
+    projCd:99, projMin:0, projMax:0, projStyle:"skull", projDmg:0, projSpeed:10, burst:0,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.6, hh:2.6, color:0x1f6e6a, roar:playLaugh,
+    build:()=>buildEvilCloneModel(), locName:"DI DEKATMU", locPos:null,
+  },
+  godzilla: {
+    name:"GODZILLA", baseHp:550, speed:2.4,
+    melee:8, meleeRange:5.5, meleeHit:6.5,
+    projCd:3.0, projMin:5, projMax:46, projStyle:"sonic", projDmg:5, projSpeed:20, burst:1,
+    canTeleport:false, fly:false, hover:0,
+    hw:1.8, hh:8.0, color:0x3a4a3a, roar:playRoar,
+    build:()=>buildGodzillaModel(), locName:"DI PULAU UTAMA", locPos:{x:64, z:50},
+  },
+  ghidorah: {
+    name:"GHIDORAH", baseHp:600, speed:4.5,
+    melee:7, meleeRange:5.0, meleeHit:6.0,
+    projCd:2.6, projMin:4, projMax:44, projStyle:"beam", projDmg:4, projSpeed:22, burst:3,
+    canTeleport:false, fly:true, hover:9,
+    hw:2.0, hh:7.0, color:0xd4af37, roar:playRoar,
+    build:()=>buildGhidorahModel(), locName:"DI PULAU SALJU", locPos:{x:28, z:20},
+  },
   witherzilla: {
     name:"WITHERZILLA", baseHp:500, speed:2.2,
     melee:7, meleeRange:5.5, meleeHit:6.5,
@@ -885,8 +957,10 @@ const BOSS_TYPES = {
     build:()=>buildWitherzillaModel(), locName:"DI PULAU UTAMA", locPos:{x:74, z:64},
   },
 };
-const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","warden","wither","elgranmaja",
-  "shroomgolem","thebloop","dragon","seahand","ningen","witherzilla"];
+const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","spider","warden","slime","wither",
+  "ninja","elgranmaja","shroomgolem","shadow","thebloop","kraken","dragon","sunboss",
+  "seahand","ningen","evilclone","godzilla","ghidorah","witherzilla"];
+let curDayAmt = 1; // 0 = malam, 1 = siang terang (untuk boss yang butuh pagi)
 const boss = {
   alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
   group:null, parts:null, flashMats:[],
@@ -1230,6 +1304,322 @@ function buildNingenModel(){
   g.add(body, head, eyeL, eyeR, armL, armR, tail, fluke, legL, legR);
   return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[white, pale] };
 }
+function buildSlimeModel(){
+  // slime hijau bening dengan banyak mata
+  const g = new THREE.Group();
+  const jelly = new THREE.MeshLambertMaterial({ color:0x58c93a, transparent:true, opacity:0.75 });
+  const core = lam(0x2f8a1e);
+  const white = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const pupil = new THREE.MeshBasicMaterial({ color:0x101010 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.3, 2.0, 2.3), jelly);
+  body.position.y = 1.2;
+  const inner = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.1, 1.3), core);
+  inner.position.y = 1.05;
+  g.add(body, inner);
+  const eyeSpots = [[-0.7,1.8],[0,1.95],[0.7,1.75],[-0.45,1.15],[0.4,1.25],[0,0.65],[-0.15,1.55],[0.55,0.8]];
+  for (const [ex, ey] of eyeSpots){
+    const w = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.06), white);
+    w.position.set(ex, ey, 1.17); w.userData.head = true;
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.13, 0.05), pupil);
+    p.position.set(ex, ey, 1.22); p.userData.head = true;
+    g.add(w, p);
+  }
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head:inner}, flashMats:[jelly, core] };
+}
+function buildSpiderModel(){
+  // raja laba-laba: mahkota emas & jubah biru bercahaya
+  const g = new THREE.Group();
+  const bodyM = lam(0x241a28), abdoM = lam(0x2f2233), legM = lam(0x1a1220);
+  const eye = new THREE.MeshBasicMaterial({ color:0xff3b2f });
+  const gold = new THREE.MeshBasicMaterial({ color:0xffd23f });
+  const cape = new THREE.MeshBasicMaterial({ color:0x4db8ff });
+  const abdomen = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.1, 1.7), abdoM);
+  abdomen.position.set(0, 1.35, -0.8);
+  const thorax = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.9, 1.0), bodyM);
+  thorax.position.set(0, 1.25, 0.3);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.7, 0.7), bodyM);
+  head.position.set(0, 1.35, 1.05); head.userData.head = true;
+  g.add(abdomen, thorax, head);
+  for (const ex of [-0.22, -0.08, 0.08, 0.22]){
+    const e = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.05), eye);
+    e.position.set(ex, 1.45, 1.42); e.userData.head = true;
+    g.add(e);
+  }
+  const band = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.14, 0.62), gold);
+  band.position.set(0, 1.78, 1.05); band.userData.head = true;
+  g.add(band);
+  for (const sx of [-0.2, 0, 0.2]){
+    const spike = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.26, 0.1), gold);
+    spike.position.set(sx, 1.96, 1.05); spike.userData.head = true;
+    g.add(spike);
+  }
+  const cloak = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.7, 0.1), cape);
+  cloak.position.set(0, 1.35, -1.78); cloak.rotation.x = 0.22;
+  g.add(cloak);
+  // 8 kaki: 3 statis per sisi + sepasang depan dianimasikan
+  for (const side of [-1, 1]){
+    for (let i=0; i<3; i++){
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.12, 0.12), legM);
+      leg.position.set(side*1.0, 1.05, -0.5 + i*0.5);
+      leg.rotation.z = side * -0.45;
+      g.add(leg);
+    }
+  }
+  const armL = new THREE.Group();
+  const fLegL = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.12, 0.12), legM);
+  fLegL.position.x = -0.85; fLegL.rotation.z = 0.45;
+  armL.add(fLegL); armL.position.set(-0.4, 1.1, 0.75);
+  const armR = new THREE.Group();
+  const fLegR = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.12, 0.12), legM);
+  fLegR.position.x = 0.85; fLegR.rotation.z = -0.45;
+  armR.add(fLegR); armR.position.set(0.4, 1.1, 0.75);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[bodyM, abdoM, legM] };
+}
+function buildSunBossModel(){
+  // matahari bermata satu penembak laser
+  const g = new THREE.Group();
+  const sunM = lam(0xffb020);
+  const ray = new THREE.MeshBasicMaterial({ color:0xffd23f });
+  const white = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const pupil = new THREE.MeshBasicMaterial({ color:0x8a1010 });
+  const core = new THREE.Mesh(new THREE.SphereGeometry(1.6, 10, 10), sunM);
+  core.position.y = 2.0;
+  const eyeW = new THREE.Mesh(new THREE.SphereGeometry(0.55, 8, 8), white);
+  eyeW.position.set(0, 2.0, 1.35); eyeW.userData.head = true;
+  const eyeP = new THREE.Mesh(new THREE.SphereGeometry(0.26, 8, 8), pupil);
+  eyeP.position.set(0, 2.0, 1.72); eyeP.userData.head = true;
+  g.add(core, eyeW, eyeP);
+  for (let i=0; i<8; i++){
+    const a = i * Math.PI/4;
+    const r = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.26, 0.26), ray);
+    r.position.set(Math.cos(a)*2.4, 2.0 + Math.sin(a)*2.4, 0);
+    r.rotation.z = a;
+    g.add(r);
+  }
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head:eyeW}, flashMats:[sunM] };
+}
+function buildShadowModel(){
+  // sosok bayangan gelap dari kota kuno
+  const g = new THREE.Group();
+  const dark = new THREE.MeshLambertMaterial({ color:0x0c0a14, transparent:true, opacity:0.88 });
+  const eye = new THREE.MeshBasicMaterial({ color:0xb46aff });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.95, 1.35, 0.5), dark);
+  body.position.y = 1.75;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.72), dark);
+  head.position.y = 2.85; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.1, 0.05), eye);
+  eyeL.position.set(-0.16, 2.92, 0.38); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.16; eyeR.userData.head = true;
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.25, 0.3), dark);
+  armMesh.position.y = -0.55;
+  armL.add(armMesh); armL.position.set(-0.68, 2.3, 0);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.68, 2.3, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 1.1, 0.4), dark);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.26, 1.1, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.26, 1.1, 0);
+  g.add(body, head, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[dark] };
+}
+function buildNinjaModel(){
+  // ninja pulau salju berkatana
+  const g = new THREE.Group();
+  const suit = lam(0x1a2438), suit2 = lam(0x131a2a);
+  const band = new THREE.MeshBasicMaterial({ color:0xc42020 });
+  const slit = new THREE.MeshBasicMaterial({ color:0xf0f0e8 });
+  const blade = new THREE.MeshBasicMaterial({ color:0xd8e0e8 });
+  const hilt = lam(0x5a3d26);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.88, 1.2, 0.46), suit);
+  body.position.y = 1.7;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.66, 0.66), suit2);
+  head.position.y = 2.75; head.userData.head = true;
+  const hb = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.14, 0.7), band);
+  hb.position.y = 2.98; hb.userData.head = true;
+  const eyes = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.1, 0.05), slit);
+  eyes.position.set(0, 2.8, 0.35); eyes.userData.head = true;
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1.15, 0.28), suit);
+  armMesh.position.y = -0.5;
+  armL.add(armMesh); armL.position.set(-0.62, 2.25, 0);
+  const armR = new THREE.Group();
+  armR.add(armMesh.clone());
+  const kBlade = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.0, 0.06), blade);
+  kBlade.position.set(0, -1.5, 0.1);
+  const kHilt = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.3, 0.09), hilt);
+  kHilt.position.set(0, -0.95, 0.1);
+  armR.add(kBlade, kHilt); armR.position.set(0.62, 2.25, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.34, 1.1, 0.38), suit2);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.24, 1.1, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.24, 1.1, 0);
+  g.add(body, head, hb, eyes, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[suit, suit2, hilt] };
+}
+function buildKrakenModel(){
+  // kraken bertentakel dari laut dekat pulau jamur
+  const g = new THREE.Group();
+  const skin = lam(0x6a2a4a), dark = lam(0x511f3a);
+  const white = new THREE.MeshBasicMaterial({ color:0xf0ead0 });
+  const pupil = new THREE.MeshBasicMaterial({ color:0x101010 });
+  const mantle = new THREE.Mesh(new THREE.BoxGeometry(2.0, 2.4, 2.0), skin);
+  mantle.position.y = 3.0;
+  const top = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.2, 1.3), dark);
+  top.position.y = 4.7; top.userData.head = true;
+  g.add(mantle, top);
+  for (const side of [-1, 1]){
+    const w = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.1), white);
+    w.position.set(side*0.55, 3.3, 1.05); w.userData.head = true;
+    const p = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.26, 0.08), pupil);
+    p.position.set(side*0.55, 3.3, 1.13); p.userData.head = true;
+    g.add(w, p);
+  }
+  // 6 tentakel statis + 2 depan dianimasikan
+  for (let i=0; i<6; i++){
+    const a = (i/6) * Math.PI*2 + 0.3;
+    const t = new THREE.Mesh(new THREE.BoxGeometry(0.36, 2.8, 0.36), dark);
+    t.position.set(Math.cos(a)*1.0, 1.1, Math.sin(a)*1.0);
+    t.rotation.x = Math.sin(a)*0.35; t.rotation.z = -Math.cos(a)*0.35;
+    g.add(t);
+  }
+  const armL = new THREE.Group();
+  const tentL = new THREE.Mesh(new THREE.BoxGeometry(0.4, 3.2, 0.4), skin);
+  tentL.position.y = -1.3;
+  armL.add(tentL); armL.position.set(-1.2, 3.4, 0.9);
+  const armR = new THREE.Group();
+  armR.add(tentL.clone()); armR.position.set(1.2, 3.4, 0.9);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head:top}, flashMats:[skin, dark] };
+}
+function buildEvilCloneModel(){
+  // kembaran jahat sang pemain, bermata putih menyala & berpedang
+  const g = new THREE.Group();
+  const skin = lam(0xd7a06a), shirt = lam(0x1f6e6a), pant = lam(0x27356e);
+  const eye = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const blade = new THREE.MeshBasicMaterial({ color:0xe0e8f0 });
+  const hilt = lam(0x5a3d26);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.25, 0.5), shirt);
+  body.position.y = 1.72;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), skin);
+  head.position.y = 2.8; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.05), eye);
+  eyeL.position.set(-0.16, 2.86, 0.37); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.16; eyeR.userData.head = true;
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.2, 0.3), shirt);
+  armMesh.position.y = -0.5;
+  armL.add(armMesh); armL.position.set(-0.65, 2.3, 0);
+  const armR = new THREE.Group();
+  armR.add(armMesh.clone());
+  // pedang di tangan kanan
+  const sBlade = new THREE.Mesh(new THREE.BoxGeometry(0.09, 1.15, 0.09), blade);
+  sBlade.position.set(0, -1.65, 0.12);
+  const sGuard = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.09, 0.12), hilt);
+  sGuard.position.set(0, -1.06, 0.12);
+  const sHilt = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.3, 0.1), hilt);
+  sHilt.position.set(0, -0.9, 0.12);
+  armR.add(sBlade, sGuard, sHilt); armR.position.set(0.65, 2.3, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 1.1, 0.4), pant);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.25, 1.1, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.25, 1.1, 0);
+  g.add(body, head, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[skin, shirt, pant, hilt] };
+}
+function buildGodzillaModel(){
+  // kadal raksasa penghancur kota
+  const g = new THREE.Group();
+  const skin = lam(0x3a4a3a), dark = lam(0x2c3a2c), belly = lam(0x8a9a7a), spike = lam(0xb8c8d0);
+  const eye = new THREE.MeshBasicMaterial({ color:0xffe14d });
+  const teeth = new THREE.MeshBasicMaterial({ color:0xf0f0e8 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(2.2, 3.2, 1.6), skin);
+  body.position.y = 4.2;
+  const plate = new THREE.Mesh(new THREE.BoxGeometry(1.5, 2.6, 0.2), belly);
+  plate.position.set(0, 4.1, 0.78);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.0, 1.2), dark);
+  head.position.set(0, 6.5, 0.4); head.userData.head = true;
+  const jaw = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.4, 1.0), skin);
+  jaw.position.set(0, 5.95, 0.65); jaw.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.14, 0.2), teeth);
+  mouth.position.set(0, 6.12, 1.12); mouth.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.14, 0.1), eye);
+  eyeL.position.set(-0.35, 6.75, 0.95); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.35; eyeR.userData.head = true;
+  g.add(body, plate, head, jaw, mouth, eyeL, eyeR);
+  // duri punggung & ekor
+  for (let i=0; i<4; i++){
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.8, 0.5), spike);
+    s.position.set(0, 5.9 - i*0.9, -0.95); s.rotation.z = Math.PI/4;
+    g.add(s);
+  }
+  const tail1 = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.9, 2.2), skin);
+  tail1.position.set(0, 3.0, -2.0);
+  const tail2 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.6, 2.2), dark);
+  tail2.position.set(0, 2.8, -3.9);
+  g.add(tail1, tail2);
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.7, 0.5), dark);
+  armMesh.position.y = -0.7;
+  armL.add(armMesh); armL.position.set(-1.35, 5.3, 0.3);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(1.35, 5.3, 0.3);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(1.0, 2.6, 1.2), skin);
+  legMesh.position.y = -1.3;
+  legL.add(legMesh); legL.position.set(-0.75, 2.6, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.75, 2.6, 0);
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[skin, dark, belly, spike] };
+}
+function buildGhidorahModel(){
+  // naga emas raksasa berkepala tiga
+  const g = new THREE.Group();
+  const gold = lam(0xd4af37), dGold = lam(0xb8942a), wingM = lam(0x9a7a1e);
+  const eye = new THREE.MeshBasicMaterial({ color:0xff3b2f });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.3, 2.5), gold);
+  body.position.set(0, 2.4, 0);
+  g.add(body);
+  for (const [nx, na] of [[0, 0], [-0.95, 0.35], [0.95, -0.35]]){
+    const neck = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.42, 1.5), dGold);
+    neck.position.set(nx*0.7, 2.95, 1.55); neck.rotation.y = na;
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.55, 0.85), gold);
+    head.position.set(nx, 3.25, 2.55); head.userData.head = true;
+    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.1, 0.1), eye);
+    eyeL.position.set(nx-0.2, 3.4, 2.8); eyeL.userData.head = true;
+    const eyeR = eyeL.clone(); eyeR.position.x = nx+0.2; eyeR.userData.head = true;
+    g.add(neck, head, eyeL, eyeR);
+  }
+  const tail1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 1.8), dGold);
+  tail1.position.set(-0.4, 2.35, -2.0);
+  const tail2 = tail1.clone(); tail2.position.x = 0.4;
+  g.add(tail1, tail2);
+  const armL = new THREE.Group();
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(4.0, 0.14, 2.2), wingM);
+  wingL.position.x = -2.1;
+  armL.add(wingL); armL.position.set(-0.85, 3.0, -0.2);
+  const armR = new THREE.Group();
+  const wingR = wingL.clone(); wingR.position.x = 2.1;
+  armR.add(wingR); armR.position.set(0.85, 3.0, -0.2);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.1, 0.6), dGold);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.6, 1.8, 0.4);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.6, 1.8, 0.4);
+  g.add(armL, armR, legL, legR);
+  g.scale.set(1.8, 1.8, 1.8);
+  return { group:g, parts:{armL, armR, legL, legR, head:body}, flashMats:[gold, dGold, wingM] };
+}
 
 function spawnBoss(){
   boss.type = BOSS_ROSTER[boss.idx];
@@ -1309,6 +1699,11 @@ const dragMat  = new THREE.MeshBasicMaterial({ color:0xb45cf0 });
 const sporeMat = new THREE.MeshBasicMaterial({ color:0xe86ad0 });
 const waterMat = new THREE.MeshBasicMaterial({ color:0x3b8bd4 });
 const inkMat   = new THREE.MeshBasicMaterial({ color:0x1a2430 });
+const slimeMat = new THREE.MeshBasicMaterial({ color:0x58c93a });
+const webMat   = new THREE.MeshBasicMaterial({ color:0xf0f0f0 });
+const laserMat = new THREE.MeshBasicMaterial({ color:0xff2020 });
+const shurMat  = new THREE.MeshBasicMaterial({ color:0xb8c0c8 });
+const beamMat  = new THREE.MeshBasicMaterial({ color:0xffe14d });
 const PROJ_LOOK = {
   fire:   { geo:fireGeo,  mat:fireMat,  color:0xff7722, tone:520 },
   skull:  { geo:skullGeo, mat:skullMat, color:0x33333d, tone:380 },
@@ -1317,6 +1712,11 @@ const PROJ_LOOK = {
   spore:  { geo:skullGeo, mat:sporeMat, color:0xe86ad0, tone:460 },
   water:  { geo:skullGeo, mat:waterMat, color:0x3b8bd4, tone:480 },
   ink:    { geo:skullGeo, mat:inkMat,   color:0x1a2430, tone:300 },
+  slime:  { geo:skullGeo, mat:slimeMat, color:0x58c93a, tone:420 },
+  web:    { geo:skullGeo, mat:webMat,   color:0xf0f0f0, tone:640 },
+  laser:  { geo:fireGeo,  mat:laserMat, color:0xff2020, tone:980 },
+  shuriken:{ geo:fireGeo, mat:shurMat,  color:0xb8c0c8, tone:900 },
+  beam:   { geo:fireGeo,  mat:beamMat,  color:0xffe14d, tone:760 },
 };
 
 function bossThrow(){
@@ -1388,7 +1788,11 @@ function updateBoss(dt, time){
   if (!boss.alive){
     if (playing && !player.dead){
       boss.spawnTimer -= dt;
-      if (boss.spawnTimer <= 0) spawnBoss();
+      if (boss.spawnTimer <= 0){
+        // boss langit menunggu pagi/siang hari sebelum muncul
+        const nextDef = BOSS_TYPES[BOSS_ROSTER[boss.idx]];
+        if (!nextDef.needsDay || curDayAmt > 0.5) spawnBoss();
+      }
     }
     return;
   }
@@ -2040,6 +2444,7 @@ function step(dt){
   dayT = (dayT + dt) % DAY_LEN;
   const phase = dayT / DAY_LEN;
   const dayAmt = Math.max(0, Math.sin(phase * Math.PI*2 + Math.PI/2)*0.5 + 0.5);
+  curDayAmt = dayAmt;
   scene.background.copy(NIGHT_SKY).lerp(DAY_SKY, dayAmt);
   scene.fog.color.copy(scene.background);
   sun.intensity = 0.15 + dayAmt * 0.75;
