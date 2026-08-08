@@ -150,7 +150,7 @@
 
 <div id="dmgflash"></div>
 <div id="death">
-  <h2>KAMU MATI!</h2>
+  <h2>Coba Lagi !</h2>
   <button id="respawnBtn">↻ HIDUP LAGI</button>
 </div>
 <div id="win">
@@ -454,10 +454,8 @@ function generateWorld(){
     const h = terrainH(x,z);
     const top = getBlock(x,h,z);
     const r = hash2(x*7+13, z*11+29);
-    // hutan bergerombol: area dengan nilai noise tinggi = pohon rapat
-    const forest = vnoise(x*0.045 + 777, z*0.045 + 333);
-    const treeChance = (top===B.GRASS)     ? (forest > 0.5 ? 0.09 : 0.015)
-                     : (top===B.SNOWGRASS) ? (forest > 0.5 ? 0.06 : 0.012) : 0;
+    // pohon jarang tersebar (tanpa hutan rapat)
+    const treeChance = (top===B.GRASS) ? 0.012 : (top===B.SNOWGRASS) ? 0.01 : 0;
     if (treeChance > 0 && r < treeChance){
       const th = 4 + Math.floor(hash2(x,z)*2);
       for (let y=1; y<=th; y++) world.set(key(x,h+y,z), B.LOG);
