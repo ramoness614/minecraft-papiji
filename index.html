@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Minecraft PAPIJI</title>
+<title>Minecraft Bossfight Mods</title>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   html,body { width:100%; height:100%; overflow:hidden; background:#000;
@@ -65,7 +65,7 @@
   #bosshp { height:12px; background:#2a0d0d; border:2px solid #000; }
   #bosshpfill { height:100%; width:100%; background:linear-gradient(#ff5a4d,#c21f14); transition:width .1s; }
   #bosswarn { position:fixed; top:26vh; left:50%; transform:translateX(-50%); z-index:12;
-    display:none; color:#ff5a4d; font-size:min(6vw,30px); font-weight:900; letter-spacing:2px;
+    display:none; color:#ff5a4d; font-size:min(4.5vw,26px); font-weight:900; letter-spacing:2px;
     text-shadow:3px 3px 0 #000; animation:blink .5s steps(2) infinite; white-space:nowrap; }
   @keyframes blink { 50% { opacity:.25; } }
 
@@ -79,6 +79,16 @@
   #respawnBtn { font-family:inherit; font-size:18px; font-weight:900; padding:12px 40px;
     cursor:pointer; color:#fff; background:#a33; border:3px solid #200; box-shadow:0 5px 0 #611; }
   #respawnBtn:active { transform:translateY(4px); box-shadow:0 1px 0 #611; }
+
+  /* ---------- Menang ---------- */
+  #win { position:fixed; inset:0; z-index:36; display:none; flex-direction:column;
+    align-items:center; justify-content:center; gap:16px; background:rgba(10,80,20,.6); }
+  #win h2 { color:#fff; font-size:min(9vw,46px); font-weight:900; letter-spacing:3px;
+    text-shadow:4px 4px 0 #043; text-align:center; padding:0 12px; }
+  #win p { color:#dff5df; font-size:14px; text-shadow:1px 1px 0 #000; text-align:center; padding:0 12px; }
+  #winBtn { font-family:inherit; font-size:18px; font-weight:900; padding:12px 40px;
+    cursor:pointer; color:#fff; background:#3a8f3a; border:3px solid #063; box-shadow:0 5px 0 #266b26; }
+  #winBtn:active { transform:translateY(4px); box-shadow:0 1px 0 #266b26; }
 
   /* ---------- Touch controls ---------- */
   #touchUI { display:none; }
@@ -104,7 +114,7 @@
 <canvas id="game"></canvas>
 
 <div id="menu">
-  <h1>MINECRAFT <span>PAPIJI</span></h1>
+  <h1>MINECRAFT <span>BOSSFIGHT MODS</span></h1>
   <div class="panel">
     <b>Kontrol (PC)</b><br>
     W A S D — bergerak • Spasi — lompat • Shift — lari<br>
@@ -115,8 +125,9 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang<br><br>
-    <b style="color:#ff8a80">⚠ Dua boss memburumu: GOLEM BATU &amp; BOSS MOJANG!</b><br>
-    Gunakan pistol (slot 1). Tembakan kepala = damage ganda!
+    <b style="color:#ff8a80">⚠ 6 BOSS menantimu: Golem Batu, Boss Mojang, Warden, Wither, Ender Dragon &amp; WITHERZILLA!</b><br>
+    Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
+    <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
   </div>
   <button id="playBtn">▶ MAIN</button>
   <div id="genInfo">Dunia dibuat acak setiap kali dimuat ulang</div>
@@ -140,6 +151,11 @@
   <h2>KAMU MATI!</h2>
   <button id="respawnBtn">↻ HIDUP LAGI</button>
 </div>
+<div id="win">
+  <h2>🎉 Selamat Ya! You Win! 🎉</h2>
+  <p>Semua boss telah dikalahkan. Tidak ada boss yang akan muncul lagi.</p>
+  <button id="winBtn">▶ LANJUT MAIN</button>
+</div>
 
 <div id="touchUI">
   <div id="joy"><div id="joyKnob"></div></div>
@@ -159,7 +175,7 @@
 /* ============================================================
    TEKSTUR — atlas 16 tile digambar prosedural (pixel art 16x16)
    ============================================================ */
-const TILE = 16, ATLAS_TILES = 16;
+const TILE = 16, ATLAS_TILES = 32;
 const atlasCanvas = document.createElement("canvas");
 atlasCanvas.width = TILE * ATLAS_TILES; atlasCanvas.height = TILE;
 const actx = atlasCanvas.getContext("2d");
@@ -209,6 +225,29 @@ function drawNoiseTile(idx, base, varc){
   for (let y=0; y<4; y++){ const off = (y%2)?4:10;
     actx.fillRect(i*TILE+off, y*4, 1, 4); actx.fillRect(i*TILE+((off+8)%16), y*4, 1, 4); } });
 /* 12 batu-bulat */ drawNoiseTile(12, ["#7f7f7f","#6f6f6f","#8f8f8f","#606060"]);
+/* 13 salju-atas */ drawNoiseTile(13, ["#f2f6fa","#e9f0f7","#ffffff","#dde7f0"]);
+/* 14 salju-sisi */ drawNoiseTile(14, ["#8a6440","#7d5a39","#966f47"], (i,r)=>{
+  for (let y=0; y<4; y++) for (let x=0; x<TILE; x++){
+    if (y<2 || r()<0.55){ actx.fillStyle = ["#f2f6fa","#e9f0f7","#ffffff"][Math.floor(r()*3)];
+      actx.fillRect(i*TILE+x, y, 1, 1); } } });
+/* 15 bata-batu */ drawNoiseTile(15, ["#9a9a9a","#8f8f8f","#a5a5a5"], (i)=>{
+  actx.fillStyle="#5f5f5f";
+  for (const y of [0,5,10,15]) actx.fillRect(i*TILE, y, TILE, 1);
+  for (let row=0; row<3; row++){ const off=(row%2)?3:11;
+    actx.fillRect(i*TILE+off, row*5, 1, 5); } });
+/* 16 miselium-atas */ drawNoiseTile(16, ["#7a6b8a","#6d5f7d","#8a7a9a","#655871"]);
+/* 17 miselium-sisi */ drawNoiseTile(17, ["#8a6440","#7d5a39","#966f47"], (i,r)=>{
+  for (let y=0; y<4; y++) for (let x=0; x<TILE; x++){
+    if (y<2 || r()<0.55){ actx.fillStyle = ["#7a6b8a","#8a7a9a","#6d5f7d"][Math.floor(r()*3)];
+      actx.fillRect(i*TILE+x, y, 1, 1); } } });
+/* 18 batang-jamur */ drawNoiseTile(18, ["#e8e2d4","#ded8ca","#f0ebe0"]);
+/* 19 topi-jamur */ drawNoiseTile(19, ["#c1272d","#b52228","#cf3238"], (i,r)=>{
+  actx.fillStyle="#f2e8e0";
+  for (let k=0;k<4;k++){ const x=Math.floor(r()*13), y=Math.floor(r()*13);
+    actx.fillRect(i*TILE+x, y, 3, 3); } });
+/* 20 obsidian */ drawNoiseTile(20, ["#17101f","#231633","#0f0a16","#2b1a40"]);
+/* 21 batu-end */ drawNoiseTile(21, ["#dfe0aa","#d6d79e","#e8e9b8","#cfd094"]);
+/* 22 portal */ drawNoiseTile(22, ["#7b2fbe","#8d3fd4","#6a24a8","#9a54e0"]);
 
 const atlasTex = new THREE.CanvasTexture(atlasCanvas);
 atlasTex.magFilter = THREE.NearestFilter;
@@ -218,7 +257,9 @@ atlasTex.minFilter = THREE.NearestFilter;
    DEFINISI BLOK & ITEM
    ============================================================ */
 const B = { AIR:0, GRASS:1, DIRT:2, STONE:3, LOG:4, LEAVES:5, SAND:6,
-            PLANK:7, GLASS:8, WATER:9, BRICK:10, COBBLE:11 };
+            PLANK:7, GLASS:8, WATER:9, BRICK:10, COBBLE:11,
+            SNOWGRASS:12, STONEBRICK:13, MYCEL:14, SHROOMSTEM:15,
+            SHROOMCAP:16, OBSIDIAN:17, ENDSTONE:18, PORTAL:19 };
 const BLOCKS = {
   [B.GRASS]:  { name:"Rumput",     top:0, side:1, bottom:2, solid:true,  transparent:false },
   [B.DIRT]:   { name:"Tanah",      top:2, side:2, bottom:2, solid:true,  transparent:false },
@@ -231,6 +272,14 @@ const BLOCKS = {
   [B.WATER]:  { name:"Air",        top:10,side:10,bottom:10,solid:false, transparent:true  },
   [B.BRICK]:  { name:"Bata",       top:11,side:11,bottom:11,solid:true,  transparent:false },
   [B.COBBLE]: { name:"Batu Bulat", top:12,side:12,bottom:12,solid:true,  transparent:false },
+  [B.SNOWGRASS]:  { name:"Salju",      top:13,side:14,bottom:2, solid:true,  transparent:false },
+  [B.STONEBRICK]: { name:"Bata Batu",  top:15,side:15,bottom:15,solid:true,  transparent:false },
+  [B.MYCEL]:      { name:"Miselium",   top:16,side:17,bottom:2, solid:true,  transparent:false },
+  [B.SHROOMSTEM]: { name:"Batang Jamur",top:18,side:18,bottom:18,solid:true, transparent:false },
+  [B.SHROOMCAP]:  { name:"Topi Jamur", top:19,side:19,bottom:19,solid:true,  transparent:false },
+  [B.OBSIDIAN]:   { name:"Obsidian",   top:20,side:20,bottom:20,solid:true,  transparent:false },
+  [B.ENDSTONE]:   { name:"Batu End",   top:21,side:21,bottom:21,solid:true,  transparent:false },
+  [B.PORTAL]:     { name:"Portal",     top:22,side:22,bottom:22,solid:false, transparent:true  },
 };
 const ITEMS = [
   { kind:"gun",   name:"Pistol" },
@@ -293,7 +342,7 @@ function playBoom(){ playTone(70, 0.4, "sawtooth", 0.3); }
 /* ============================================================
    DUNIA — noise + generator terrain
    ============================================================ */
-const WORLD = 64, MAXH = 40, WATER_LEVEL = 11, CHUNK = 16;
+const WORLD = 128, MAXH = 40, WATER_LEVEL = 11, CHUNK = 16;
 const seed = Math.floor(Math.random()*1e9);
 function hash2(x, z){
   let h = (x*374761393 + z*668265263 + seed*971) | 0;
@@ -307,9 +356,30 @@ function vnoise(x, z){
   const a = hash2(xi,zi), b = hash2(xi+1,zi), c = hash2(xi,zi+1), d = hash2(xi+1,zi+1);
   return lerp(lerp(a,b,smooth(xf)), lerp(c,d,smooth(xf)), smooth(zf));
 }
+/* ---- pulau-pulau bertema, dipisah lautan ---- */
+const ISLANDS = [
+  { cx:64,  cz:64,  r:26, biome:"plains"   },  // pulau utama (spawn)
+  { cx:22,  cz:26,  r:17, biome:"snow"     },  // pulau salju
+  { cx:104, cz:24,  r:17, biome:"ancient"  },  // kota kuno
+  { cx:24,  cz:104, r:16, biome:"mushroom" },  // pulau jamur
+  { cx:104, cz:104, r:15, biome:"end"      },  // pulau end
+];
+function islandAt(x, z){
+  let best = null, bf = 0;
+  for (const isl of ISLANDS){
+    const d = Math.hypot(x - isl.cx, z - isl.cz);
+    const f = 1 - (d/isl.r)*(d/isl.r);
+    if (f > bf){ bf = f; best = isl; }
+  }
+  return { isl:best, f:Math.max(0, bf) };
+}
 function terrainH(x, z){
-  const n = vnoise(x*0.022, z*0.022)*16 + vnoise(x*0.07, z*0.07)*6 + vnoise(x*0.16, z*0.16)*2;
-  return Math.max(2, Math.min(MAXH-8, Math.floor(4 + n)));
+  const info = islandAt(x, z);
+  if (info.f <= 0) return 3; // dasar laut
+  const n = vnoise(x*0.022, z*0.022)*14 + vnoise(x*0.07, z*0.07)*5 + vnoise(x*0.16, z*0.16)*2;
+  let h = 2 + info.f*(7 + n*0.75);
+  if (info.isl.biome === "end") h += info.f*3;
+  return Math.max(2, Math.min(MAXH-8, Math.floor(h)));
 }
 
 const world = new Map();
@@ -320,21 +390,68 @@ function getBlock(x,y,z){
 }
 function inWorld(x,z){ return x>=0 && z>=0 && x<WORLD && z<WORLD; }
 
+function surfaceBlock(biome, h, x, z){
+  if (h <= WATER_LEVEL+1) return B.SAND;
+  if (biome === "snow")     return B.SNOWGRASS;
+  if (biome === "mushroom") return B.MYCEL;
+  if (biome === "end")      return B.ENDSTONE;
+  if (biome === "ancient"){
+    const r = hash2(x*3+7, z*5+1);
+    return r < 0.45 ? B.STONEBRICK : (r < 0.7 ? B.COBBLE : B.STONE);
+  }
+  return B.GRASS;
+}
+
+/* ---- portal antar pulau ---- */
+const portalCells = new Map(); // key(x,y,z) -> {x,z} tujuan
+function buildPortal(x, z, dest){
+  const h = terrainH(x, z);
+  // ratakan & bersihkan area sekitar portal
+  for (let dx=-1; dx<=4; dx++) for (let dz=-2; dz<=3; dz++){
+    const gx = x+dx, gz = z+dz;
+    for (let y=h+1; y<=h+7; y++) world.delete(key(gx,y,gz));
+    for (let y=Math.max(0,h-2); y<=h; y++){
+      const b = getBlock(gx,y,gz);
+      if (b === B.AIR || b === B.WATER) world.set(key(gx,y,gz), B.STONE);
+    }
+  }
+  // bingkai obsidian 4x5 dengan portal 2x3 di dalamnya
+  for (let dx=0; dx<4; dx++) for (let dy=0; dy<5; dy++){
+    const border = (dx===0 || dx===3 || dy===0 || dy===4);
+    world.set(key(x+dx, h+dy, z), border ? B.OBSIDIAN : B.PORTAL);
+    if (!border) portalCells.set(key(x+dx, h+dy, z), dest);
+  }
+}
+function linkPortals(ax, az, bx, bz){
+  buildPortal(ax, az, {x:bx, z:bz});
+  buildPortal(bx, bz, {x:ax, z:az});
+}
+
 function generateWorld(){
   for (let x=0; x<WORLD; x++) for (let z=0; z<WORLD; z++){
     const h = terrainH(x,z);
+    const info = islandAt(x,z);
+    const biome = info.f > 0 ? info.isl.biome : "ocean";
     for (let y=0; y<=h; y++){
       let id;
-      if (y === h)      id = (h <= WATER_LEVEL+1) ? B.SAND : B.GRASS;
-      else if (y > h-3) id = (h <= WATER_LEVEL+1) ? B.SAND : B.DIRT;
-      else              id = B.STONE;
+      if (y === h) id = surfaceBlock(biome, h, x, z);
+      else if (y > h-3){
+        if (h <= WATER_LEVEL+1)      id = B.SAND;
+        else if (biome === "end")    id = B.ENDSTONE;
+        else if (biome === "ancient")id = B.STONE;
+        else                         id = B.DIRT;
+      }
+      else id = B.STONE;
       world.set(key(x,y,z), id);
     }
     for (let y=h+1; y<=WATER_LEVEL; y++) world.set(key(x,y,z), B.WATER);
   }
+  // fitur per pulau: pohon, jamur raksasa, reruntuhan, pilar obsidian
   for (let x=3; x<WORLD-3; x++) for (let z=3; z<WORLD-3; z++){
     const h = terrainH(x,z);
-    if (getBlock(x,h,z)===B.GRASS && hash2(x*7+13, z*11+29) < 0.014){
+    const top = getBlock(x,h,z);
+    const r = hash2(x*7+13, z*11+29);
+    if ((top===B.GRASS && r < 0.014) || (top===B.SNOWGRASS && r < 0.012)){
       const th = 4 + Math.floor(hash2(x,z)*2);
       for (let y=1; y<=th; y++) world.set(key(x,h+y,z), B.LOG);
       for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++) for (let dy=0; dy<=2; dy++){
@@ -344,9 +461,41 @@ function generateWorld(){
           if (!world.has(p)) world.set(p, B.LEAVES);
         }
       }
-      world.set(key(x, h+th+1, z), B.LEAVES);
+      world.set(key(x, h+th+1, z), top===B.SNOWGRASS ? B.SNOWGRASS : B.LEAVES);
+    } else if (top===B.MYCEL && r < 0.02){
+      // jamur raksasa
+      const th = 3 + Math.floor(hash2(x,z)*3);
+      for (let y=1; y<=th; y++) world.set(key(x,h+y,z), B.SHROOMSTEM);
+      for (let dx=-2; dx<=2; dx++) for (let dz=-2; dz<=2; dz++)
+        if (!(Math.abs(dx)===2 && Math.abs(dz)===2))
+          world.set(key(x+dx, h+th+1, z+dz), B.SHROOMCAP);
+      for (let dx=-1; dx<=1; dx++) for (let dz=-1; dz<=1; dz++)
+        world.set(key(x+dx, h+th+2, z+dz), B.SHROOMCAP);
+    } else if ((top===B.STONEBRICK || top===B.COBBLE) && r < 0.008 && h > WATER_LEVEL+1){
+      // reruntuhan kota kuno: pilar atau sisa tembok
+      const t = hash2(x*13+3, z*17+5);
+      if (t < 0.5){
+        const ph = 3 + Math.floor(t*8);
+        for (let y=1; y<=ph; y++) world.set(key(x,h+y,z), B.STONEBRICK);
+      } else if (x < WORLD-8 && z < WORLD-8){
+        for (let dx=0; dx<5; dx++) for (let dz=0; dz<4; dz++){
+          if (dx>0 && dx<4 && dz>0 && dz<3) continue;
+          const gh = terrainH(x+dx, z+dz);
+          for (let y=1; y<=2; y++)
+            if (hash2((x+dx)*31+y, (z+dz)*37) > 0.3)
+              world.set(key(x+dx, gh+y, z+dz), B.STONEBRICK);
+        }
+      }
+    } else if (top===B.ENDSTONE && r < 0.01){
+      const ph = 4 + Math.floor(hash2(x,z)*5);
+      for (let y=1; y<=ph; y++) world.set(key(x,h+y,z), B.OBSIDIAN);
     }
   }
+  // portal: pulau utama <-> tiap pulau lain
+  linkPortals(56, 56, 22, 32);    // utama <-> pulau salju
+  linkPortals(72, 56, 104, 30);   // utama <-> kota kuno
+  linkPortals(56, 72, 24, 110);   // utama <-> pulau jamur
+  linkPortals(72, 72, 104, 110);  // utama <-> pulau end
 }
 generateWorld();
 
@@ -563,6 +712,19 @@ function damagePlayer(amount, fromPos){
     if (document.pointerLockElement) document.exitPointerLock();
   }
 }
+const winEl = document.getElementById("win");
+function showWin(){
+  playing = false; // dijeda dulu agar menu tidak ikut muncul saat pointer lock lepas
+  winEl.style.display = "flex";
+  [523, 659, 784, 1047, 1319].forEach((f, i) =>
+    setTimeout(() => playTone(f, 0.25, "square", 0.18), i*140));
+  if (document.pointerLockElement) document.exitPointerLock();
+}
+document.getElementById("winBtn").addEventListener("click", () => {
+  winEl.style.display = "none";
+  playing = true;
+  if (!isTouch) canvas.requestPointerLock();
+});
 document.getElementById("respawnBtn").addEventListener("click", () => {
   player.hp = player.maxHp; player.dead = false; player.invul = 2;
   player.fly = false; player.flyDown = false;
@@ -600,7 +762,7 @@ function raycast(maxDist){
   let face = [0,0,0], t = 0;
   while (t <= maxDist){
     const b = getBlock(x, y, z);
-    if (b !== B.AIR && b !== B.WATER) return { x, y, z, face, id:b, t };
+    if (b !== B.AIR && b !== B.WATER && b !== B.PORTAL) return { x, y, z, face, id:b, t };
     if (tMX < tMY && tMX < tMZ){ x += stepX; t = tMX; tMX += tDX; face = [-stepX,0,0]; }
     else if (tMY < tMZ)        { y += stepY; t = tMY; tMY += tDY; face = [0,-stepY,0]; }
     else                       { z += stepZ; t = tMZ; tMZ += tDZ; face = [0,0,-stepZ]; }
@@ -609,27 +771,65 @@ function raycast(maxDist){
 }
 
 /* ============================================================
-   SISTEM BOSS — Golem Batu & BOSS Mojang
+   SISTEM BOSS — 6 boss, tiap boss spawn di lokasi berbeda.
+   Kalahkan semuanya untuk menang!
    ============================================================ */
 const BOSS_TYPES = {
   golem: {
     name:"GOLEM BATU", baseHp:100, speed:2.5,
     melee:4, meleeRange:2.6, meleeHit:3.4,
-    projCd:3.2, projMin:6, projMax:20,
-    canTeleport:false, roar:playRoar,
+    projCd:3.2, projMin:6, projMax:20, projStyle:"rock", projDmg:3, projSpeed:13, burst:1,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.7, hh:3.0, color:0x8d8d8d, roar:playRoar,
+    build:()=>buildGolemModel(), locName:"DI DEKATMU", locPos:null,
   },
   mojang: {
     name:"BOSS MOJANG", baseHp:140, speed:3.4,
     melee:5, meleeRange:2.4, meleeHit:3.2,
-    projCd:2.6, projMin:5, projMax:24,
-    canTeleport:true, roar:playLaugh,
+    projCd:2.6, projMin:5, projMax:24, projStyle:"fire", projDmg:3, projSpeed:16, burst:3,
+    canTeleport:true, fly:false, hover:0,
+    hw:0.7, hh:3.0, color:0xd93a2b, roar:playLaugh,
+    build:()=>buildMojangModel(), locName:"DI DEKATMU", locPos:null,
+  },
+  warden: {
+    name:"WARDEN", baseHp:220, speed:3.0,
+    melee:6, meleeRange:2.8, meleeHit:3.6,
+    projCd:2.8, projMin:5, projMax:30, projStyle:"sonic", projDmg:4, projSpeed:20, burst:1,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.8, hh:3.4, color:0x0d4f56, roar:playRoar,
+    build:()=>buildWardenModel(), locName:"DI KOTA KUNO", locPos:{x:104, z:24},
+  },
+  wither: {
+    name:"WITHER", baseHp:260, speed:3.4,
+    melee:0, meleeRange:0, meleeHit:0,
+    projCd:2.4, projMin:2, projMax:34, projStyle:"skull", projDmg:3, projSpeed:14, burst:3,
+    canTeleport:false, fly:true, hover:5,
+    hw:0.8, hh:3.2, color:0x2a2a33, roar:playRoar,
+    build:()=>buildWitherModel(), locName:"DI PULAU SALJU", locPos:{x:22, z:26},
+  },
+  dragon: {
+    name:"ENDER DRAGON", baseHp:300, speed:5.5,
+    melee:5, meleeRange:3.6, meleeHit:4.2,
+    projCd:2.2, projMin:3, projMax:40, projStyle:"dragon", projDmg:4, projSpeed:18, burst:1,
+    canTeleport:false, fly:true, hover:7, circle:9,
+    hw:1.4, hh:3.5, color:0xa050e0, roar:playRoar,
+    build:()=>buildDragonModel(), locName:"DI PULAU END", locPos:{x:104, z:104},
+  },
+  witherzilla: {
+    name:"WITHERZILLA", baseHp:500, speed:2.2,
+    melee:7, meleeRange:5.5, meleeHit:6.5,
+    projCd:3.0, projMin:4, projMax:44, projStyle:"skull", projDmg:4, projSpeed:15, burst:5,
+    canTeleport:false, fly:false, hover:0,
+    hw:2.0, hh:9.0, color:0x1b1b22, roar:playRoar,
+    build:()=>buildWitherzillaModel(), locName:"DI PULAU UTAMA", locPos:{x:74, z:64},
   },
 };
+const BOSS_ROSTER = ["golem","mojang","warden","wither","dragon","witherzilla"];
 const boss = {
-  alive:false, type:"golem", def:BOSS_TYPES.golem,
+  alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
   group:null, parts:null, flashMats:[],
   pos:new THREE.Vector3(), vy:0, onGround:false,
-  hp:100, maxHp:100, kills:0, bonusHp:0,
+  hp:100, maxHp:100, kills:0,
   attackT:0, attackCd:0, projCd:0, teleCd:0,
   burstLeft:0, burstT:0,
   hurtT:0, dieT:0, dying:false,
@@ -712,20 +912,125 @@ function buildMojangModel(){
   g.add(body, m1, m2, m3, m4, head, hairTop, eyeL, eyeR, armL, armR, legL, legR);
   return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[red, dRed, skin, hair, pant] };
 }
+function buildWardenModel(){
+  const g = new THREE.Group();
+  const teal = lam(0x0e3b40), dark = lam(0x092b30), limb = lam(0x0b333a);
+  const eye = new THREE.MeshBasicMaterial({ color:0x35e8ff });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.25, 1.5, 0.75), teal);
+  body.position.y = 1.85;
+  const chest = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.7, 0.06),
+    new THREE.MeshBasicMaterial({ color:0x1a7d8c }));
+  chest.position.set(0, 1.8, 0.4);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.9, 0.75, 0.8), dark);
+  head.position.y = 3.0; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.05), eye);
+  eyeL.position.set(-0.2, 3.05, 0.42); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.2; eyeR.userData.head = true;
+  const hornL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.5, 0.12), dark);
+  hornL.position.set(-0.35, 3.55, 0); hornL.rotation.z = 0.35; hornL.userData.head = true;
+  const hornR = hornL.clone(); hornR.position.x = 0.35; hornR.rotation.z = -0.35; hornR.userData.head = true;
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.45, 1.7, 0.45), limb);
+  armMesh.position.y = -0.75;
+  armL.add(armMesh); armL.position.set(-0.9, 2.45, 0);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.9, 2.45, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.48, 1.1, 0.52), limb);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.35, 1.1, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.35, 1.1, 0);
+  g.add(body, chest, head, eyeL, eyeR, hornL, hornR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[teal, dark, limb] };
+}
+function buildWitherModel(){
+  const g = new THREE.Group();
+  const dark = lam(0x24242c), darker = lam(0x17171d);
+  const eye = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const spine = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.6, 0.4), darker);
+  spine.position.y = 1.9;
+  const chest = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.7, 0.55), dark);
+  chest.position.y = 2.45;
+  for (let i=0; i<3; i++){
+    const rb = new THREE.Mesh(new THREE.BoxGeometry(0.95 - i*0.2, 0.12, 0.45), dark);
+    rb.position.y = 1.75 - i*0.3;
+    g.add(rb);
+  }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.75, 0.75), dark);
+  head.position.y = 3.2; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.13, 0.1, 0.05), eye);
+  eyeL.position.set(-0.16, 3.28, 0.39); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.16; eyeR.userData.head = true;
+  const headS1 = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 0.55), dark);
+  headS1.position.set(-0.7, 2.95, 0); headS1.userData.head = true;
+  const headS2 = headS1.clone(); headS2.position.x = 0.7; headS2.userData.head = true;
+  const sEyeL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.04), eye);
+  sEyeL.position.set(-0.7, 3.02, 0.29); sEyeL.userData.head = true;
+  const sEyeR = sEyeL.clone(); sEyeR.position.x = 0.7; sEyeR.userData.head = true;
+  const tail = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.9, 0.3), darker);
+  tail.position.y = 0.85;
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(spine, chest, head, eyeL, eyeR, headS1, headS2, sEyeL, sEyeR, tail, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[dark, darker] };
+}
+function buildWitherzillaModel(){
+  const built = buildWitherModel();
+  built.group.scale.set(3, 3, 3); // wither raksasa
+  return built;
+}
+function buildDragonModel(){
+  const g = new THREE.Group();
+  const dark = lam(0x1c1c24), gray = lam(0x2c2c36), wingM = lam(0x232330);
+  const eye = new THREE.MeshBasicMaterial({ color:0xd06cff });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.1, 2.6), dark);
+  body.position.set(0, 2.3, 0);
+  const neck = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.55, 1.3), gray);
+  neck.position.set(0, 2.75, 1.8);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.7, 1.0), dark);
+  head.position.set(0, 2.95, 2.7); head.userData.head = true;
+  const snout = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.35, 0.5), gray);
+  snout.position.set(0, 2.82, 3.35); snout.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.1, 0.14), eye);
+  eyeL.position.set(-0.32, 3.1, 2.85); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.32; eyeR.userData.head = true;
+  const tail1 = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.5, 1.6), gray);
+  tail1.position.set(0, 2.3, -2.0);
+  const tail2 = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.3, 1.6), dark);
+  tail2.position.set(0, 2.35, -3.4);
+  const armL = new THREE.Group();
+  const wingL = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.12, 1.8), wingM);
+  wingL.position.x = -1.8;
+  armL.add(wingL); armL.position.set(-0.75, 2.8, 0);
+  const armR = new THREE.Group();
+  const wingR = wingL.clone(); wingR.position.x = 1.8;
+  armR.add(wingR); armR.position.set(0.75, 2.8, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.9, 0.5), gray);
+  legMesh.position.y = -0.45;
+  legL.add(legMesh); legL.position.set(-0.6, 1.7, 0.5);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.6, 1.7, 0.5);
+  g.add(body, neck, head, snout, eyeL, eyeR, tail1, tail2, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[dark, gray, wingM] };
+}
 
 function spawnBoss(){
-  boss.type = (boss.kills % 2 === 0) ? "golem" : "mojang";
+  boss.type = BOSS_ROSTER[boss.idx];
   boss.def = BOSS_TYPES[boss.type];
-  const built = (boss.type === "golem") ? buildGolemModel() : buildMojangModel();
+  const built = boss.def.build();
   boss.group = built.group; boss.parts = built.parts; boss.flashMats = built.flashMats;
-  const ang = Math.random()*Math.PI*2;
-  let sx = Math.round(player.pos.x + Math.cos(ang)*20);
-  let sz = Math.round(player.pos.z + Math.sin(ang)*20);
-  sx = Math.max(3, Math.min(WORLD-4, sx));
-  sz = Math.max(3, Math.min(WORLD-4, sz));
-  boss.pos.set(sx+0.5, terrainH(sx,sz)+1, sz+0.5);
+  let sx, sz;
+  if (boss.def.locPos){
+    sx = boss.def.locPos.x; sz = boss.def.locPos.z;
+  } else {
+    const ang = Math.random()*Math.PI*2;
+    sx = Math.round(player.pos.x + Math.cos(ang)*20);
+    sz = Math.round(player.pos.z + Math.sin(ang)*20);
+    sx = Math.max(3, Math.min(WORLD-4, sx));
+    sz = Math.max(3, Math.min(WORLD-4, sz));
+  }
+  boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0), sz+0.5);
   boss.vy = 0; boss.onGround = false;
-  boss.maxHp = boss.def.baseHp + boss.bonusHp;
+  boss.maxHp = boss.def.baseHp;
   boss.hp = boss.maxHp;
   boss.dying = false; boss.dieT = 0;
   boss.attackT = 0; boss.attackCd = 1; boss.projCd = 2.5;
@@ -734,60 +1039,73 @@ function spawnBoss(){
   scene.add(boss.group);
   bossnameEl.textContent = boss.def.name;
   bossbar.style.display = "block";
-  bosswarn.textContent = "\u26A0 " + boss.def.name + " MUNCUL! \u26A0";
-  bosswarn.style.display = "block"; boss.warnT = 3;
+  bosswarn.textContent = "\u26A0 " + boss.def.name + " MUNCUL " + boss.def.locName + "! \u26A0";
+  bosswarn.style.display = "block"; boss.warnT = 4;
   boss.def.roar();
-  spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1.5,0)),
-    boss.type === "golem" ? 0x8d8d8d : 0xd93a2b, 20, 5);
+  spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1.5,0)), boss.def.color, 20, 5);
 }
 function hurtBoss(amount, at){
   if (!boss.alive || boss.dying) return;
   boss.hp -= amount;
   boss.hurtT = 0.18;
   bosshpfill.style.width = Math.max(0, boss.hp/boss.maxHp*100) + "%";
-  if (at) spawnParticles(at, boss.type === "golem" ? 0x8d8d8d : 0xd93a2b, 6, 3);
+  if (at) spawnParticles(at, boss.def.color, 6, 3);
   if (boss.hp <= 0){
     boss.dying = true; boss.dieT = 1.2;
     playBoom();
   }
 }
 function bCollides(px, py, pz){
-  for (const dx of [-0.7, 0.7])
-    for (const dz of [-0.7, 0.7])
-      for (const dy of [0.05, 1.4, 2.8])
+  const hw = boss.def.hw, hh = boss.def.hh;
+  for (const dx of [-hw, hw])
+    for (const dz of [-hw, hw])
+      for (const dy of [0.05, hh*0.5, hh-0.1])
         if (solidAt(px+dx, py+dy, pz+dz)) return true;
   return false;
 }
 
-/* ---- proyektil boss (batu golem / bola api mojang) ---- */
+/* ---- proyektil boss ---- */
 const projs = [];
 const rockGeo = new THREE.DodecahedronGeometry(0.32);
 const rockMat = new THREE.MeshLambertMaterial({ color:0x7a7a7a });
 const fireGeo = new THREE.SphereGeometry(0.26, 8, 8);
 const fireMat = new THREE.MeshBasicMaterial({ color:0xff7722 });
+const skullGeo = new THREE.SphereGeometry(0.3, 8, 8);
+const skullMat = new THREE.MeshBasicMaterial({ color:0x33333d });
+const sonicMat = new THREE.MeshBasicMaterial({ color:0x35e8ff });
+const dragMat  = new THREE.MeshBasicMaterial({ color:0xb45cf0 });
+const PROJ_LOOK = {
+  fire:   { geo:fireGeo,  mat:fireMat,  color:0xff7722, tone:520 },
+  skull:  { geo:skullGeo, mat:skullMat, color:0x33333d, tone:380 },
+  sonic:  { geo:skullGeo, mat:sonicMat, color:0x35e8ff, tone:700 },
+  dragon: { geo:fireGeo,  mat:dragMat,  color:0xb45cf0, tone:600 },
+};
 
 function bossThrow(){
-  const hand = boss.pos.clone().add(new THREE.Vector3(0, 2.4, 0));
+  const def = boss.def;
+  const hand = boss.pos.clone().add(new THREE.Vector3(0, def.hh*0.75, 0));
   const target = player.pos.clone().add(new THREE.Vector3(0, 1, 0));
-  if (boss.type === "golem"){
+  if (def.projStyle === "rock"){
+    // golem: batu melengkung dengan gravitasi
     const dir = target.clone().sub(hand);
     const dist = Math.hypot(dir.x, dir.z);
     const flat = new THREE.Vector3(dir.x, 0, dir.z).normalize();
-    const vel = flat.multiplyScalar(13);
+    const vel = flat.multiplyScalar(def.projSpeed);
     vel.y = 4 + dist*0.28 + dir.y*0.5;
     const m = new THREE.Mesh(rockGeo, rockMat);
     m.position.copy(hand);
-    projs.push({ mesh:m, vel, life:5, grav:20, dmg:3, color:0x7a7a7a, spin:true });
+    projs.push({ mesh:m, vel, life:5, grav:20, dmg:def.projDmg, color:0x7a7a7a, spin:true });
     scene.add(m);
     playTone(220, 0.15, "sawtooth", 0.15);
   } else {
-    // Mojang: bola api lurus & cepat
-    const vel = target.clone().sub(hand).normalize().multiplyScalar(16);
-    const m = new THREE.Mesh(fireGeo, fireMat);
+    // lurus & cepat: bola api / tengkorak / sonic / api naga
+    const look = PROJ_LOOK[def.projStyle];
+    const vel = target.clone().sub(hand).normalize().multiplyScalar(def.projSpeed);
+    const m = new THREE.Mesh(look.geo, look.mat);
     m.position.copy(hand);
-    projs.push({ mesh:m, vel, life:4, grav:0, dmg:3, color:0xff7722, spin:false });
+    projs.push({ mesh:m, vel, life:4, grav:0, dmg:def.projDmg, color:look.color, spin:false });
     scene.add(m);
-    playTone(520, 0.12, "sawtooth", 0.14);
+    playTone(look.tone, 0.12, "sawtooth", 0.14);
   }
 }
 function updateProjs(dt){
@@ -828,6 +1146,7 @@ function bossTeleport(){
 }
 
 function updateBoss(dt, time){
+  if (boss.allDead) return; // semua boss kalah — tidak ada spawn lagi
   if (!boss.alive){
     if (playing && !player.dead){
       boss.spawnTimer -= dt;
@@ -843,17 +1162,23 @@ function updateBoss(dt, time){
   if (boss.dying){
     boss.dieT -= dt;
     boss.group.rotation.x = (1.2-boss.dieT)/1.2 * (Math.PI/2);
+    if (boss.def.fly)
+      boss.pos.y = Math.max(terrainH(boss.pos.x, boss.pos.z)+1, boss.pos.y - 5*dt);
     boss.group.position.copy(boss.pos);
     if (boss.dieT <= 0.6 && boss.dieT + dt > 0.6)
-      spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)),
-        boss.type === "golem" ? 0x8d8d8d : 0xd93a2b, 24, 6);
+      spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), boss.def.color, 24, 6);
     if (boss.dieT <= 0){
       scene.remove(boss.group);
       boss.alive = false;
       boss.kills++;
-      boss.bonusHp += 25;   // boss berikutnya makin kuat
       bossbar.style.display = "none";
-      boss.spawnTimer = 30;
+      if (boss.idx < BOSS_ROSTER.length - 1){
+        boss.idx++;
+        boss.spawnTimer = 25;
+      } else {
+        boss.allDead = true;
+        showWin();
+      }
     }
     return;
   }
@@ -862,35 +1187,65 @@ function updateBoss(dt, time){
   const dx = player.pos.x - boss.pos.x;
   const dz = player.pos.z - boss.pos.z;
   const dist = Math.hypot(dx, dz);
+  const dyC = (player.pos.y + 1) - (boss.pos.y + def.hh*0.5);
+  const dist3 = Math.hypot(dist, dyC);
+  // boss di pulau lain menunggu sampai pemain mendekat
+  const engaged = !player.dead && dist < 48;
   let moving = 0;
 
   boss.attackCd = Math.max(0, boss.attackCd - dt);
   boss.projCd   = Math.max(0, boss.projCd - dt);
   boss.teleCd   = Math.max(0, boss.teleCd - dt);
 
-  // gerak mendekat
-  if (!player.dead && dist > 2.0 && boss.attackT <= 0){
-    const nx = dx/dist, nz = dz/dist;
-    const tx = boss.pos.x + nx*def.speed*dt;
-    const tz = boss.pos.z + nz*def.speed*dt;
-    let blocked = false;
-    if (!bCollides(tx, boss.pos.y, boss.pos.z)) boss.pos.x = tx; else blocked = true;
-    if (!bCollides(boss.pos.x, boss.pos.y, tz)) boss.pos.z = tz; else blocked = true;
-    if (blocked && boss.onGround) boss.vy = 8.5;
-    moving = 1;
-  }
-  // gravitasi
-  boss.vy -= 22*dt;
-  const ny = boss.pos.y + boss.vy*dt;
-  if (!bCollides(boss.pos.x, ny, boss.pos.z)){
-    boss.pos.y = ny; boss.onGround = false;
+  if (def.fly){
+    // boss terbang: kejar posisi target di udara, abaikan tabrakan blok
+    let tx = player.pos.x, tz = player.pos.z;
+    if (def.circle){ // ender dragon berputar mengelilingi pemain
+      tx += Math.cos(time*0.5)*def.circle;
+      tz += Math.sin(time*0.5)*def.circle;
+    }
+    if (engaged && boss.attackT <= 0){
+      const ddx = tx - boss.pos.x, ddz = tz - boss.pos.z;
+      const dd = Math.hypot(ddx, ddz);
+      if (dd > 1.5){
+        boss.pos.x += ddx/dd*def.speed*dt;
+        boss.pos.z += ddz/dd*def.speed*dt;
+        moving = 1;
+      }
+    }
+    boss.pos.x = Math.max(2, Math.min(WORLD-2, boss.pos.x));
+    boss.pos.z = Math.max(2, Math.min(WORLD-2, boss.pos.z));
+    const gh = terrainH(boss.pos.x, boss.pos.z);
+    const targetY = engaged ? Math.max(gh+2, player.pos.y + def.hover) : gh + def.hover;
+    boss.pos.y += (targetY - boss.pos.y) * Math.min(1, dt*2);
+    boss.vy = 0; boss.onGround = false;
   } else {
-    if (boss.vy < 0) boss.onGround = true;
-    boss.vy = 0;
+    // gerak mendekat di darat
+    if (engaged && dist > 2.0 && boss.attackT <= 0){
+      const nx = dx/dist, nz = dz/dist;
+      const tx = boss.pos.x + nx*def.speed*dt;
+      const tz = boss.pos.z + nz*def.speed*dt;
+      let blocked = false;
+      if (!bCollides(tx, boss.pos.y, boss.pos.z)) boss.pos.x = tx; else blocked = true;
+      if (!bCollides(boss.pos.x, boss.pos.y, tz)) boss.pos.z = tz; else blocked = true;
+      if (blocked && boss.onGround) boss.vy = 8.5;
+      moving = 1;
+    }
+    // gravitasi
+    boss.vy -= 22*dt;
+    const ny = boss.pos.y + boss.vy*dt;
+    if (!bCollides(boss.pos.x, ny, boss.pos.z)){
+      boss.pos.y = ny; boss.onGround = false;
+    } else {
+      if (boss.vy < 0) boss.onGround = true;
+      boss.vy = 0;
+    }
   }
 
-  // serangan jarak dekat
-  if (!player.dead && dist < def.meleeRange && boss.attackCd <= 0 && boss.attackT <= 0){
+  // serangan jarak dekat (boss terbang pakai jarak 3D)
+  const meleeDist = def.fly ? dist3 : dist;
+  if (engaged && def.meleeRange > 0 && meleeDist < def.meleeRange &&
+      boss.attackCd <= 0 && boss.attackT <= 0){
     boss.attackT = 0.7; boss.attackCd = 1.5;
     def.roar();
   }
@@ -898,16 +1253,17 @@ function updateBoss(dt, time){
     const prev = boss.attackT;
     boss.attackT -= dt;
     if (prev > 0.32 && boss.attackT <= 0.32 && !player.dead){
-      const d2 = Math.hypot(player.pos.x-boss.pos.x, player.pos.z-boss.pos.z);
-      if (d2 < def.meleeHit) damagePlayer(def.melee, boss.pos);
+      const hx = Math.hypot(player.pos.x-boss.pos.x, player.pos.z-boss.pos.z);
+      const hd = def.fly ? Math.hypot(hx, (player.pos.y+1)-(boss.pos.y+def.hh*0.5)) : hx;
+      if (hd < def.meleeHit) damagePlayer(def.melee, boss.pos);
       spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,0.3,0)), 0x8a6440, 8, 4);
     }
   }
-  // proyektil: golem 1 batu, mojang burst 3 bola api
-  if (!player.dead && dist > def.projMin && dist < def.projMax &&
+  // proyektil (burst sesuai definisi boss)
+  if (engaged && dist > def.projMin && dist < def.projMax &&
       boss.projCd <= 0 && boss.attackT <= 0){
     boss.projCd = def.projCd;
-    if (boss.type === "mojang"){ boss.burstLeft = 3; boss.burstT = 0; }
+    if (def.burst > 1){ boss.burstLeft = def.burst; boss.burstT = 0; }
     else bossThrow();
   }
   if (boss.burstLeft > 0){
@@ -918,18 +1274,26 @@ function updateBoss(dt, time){
     }
   }
   // teleport (khusus Mojang)
-  if (def.canTeleport && !player.dead && boss.teleCd <= 0 && dist > 9){
+  if (def.canTeleport && engaged && boss.teleCd <= 0 && dist > 9){
     boss.teleCd = 7;
     bossTeleport();
   }
 
   // animasi
-  const swing = Math.sin(time*8) * 0.55 * moving;
-  const atk = boss.attackT > 0 ? Math.sin((0.7-boss.attackT)/0.7 * Math.PI) : 0;
-  boss.parts.legL.rotation.x = swing;
-  boss.parts.legR.rotation.x = -swing;
-  boss.parts.armL.rotation.x = -swing*0.6 - atk*2.3;
-  boss.parts.armR.rotation.x = swing*0.6 - atk*2.3;
+  if (def.fly){
+    const flap = Math.sin(time*5) * 0.6;
+    boss.parts.armL.rotation.z = 0.25 + flap;
+    boss.parts.armR.rotation.z = -0.25 - flap;
+    boss.parts.legL.rotation.x = 0.3;
+    boss.parts.legR.rotation.x = 0.3;
+  } else {
+    const swing = Math.sin(time*8) * 0.55 * moving;
+    const atk = boss.attackT > 0 ? Math.sin((0.7-boss.attackT)/0.7 * Math.PI) : 0;
+    boss.parts.legL.rotation.x = swing;
+    boss.parts.legR.rotation.x = -swing;
+    boss.parts.armL.rotation.x = -swing*0.6 - atk*2.3;
+    boss.parts.armR.rotation.x = swing*0.6 - atk*2.3;
+  }
   boss.group.rotation.y = Math.atan2(dx, dz);
   boss.group.position.copy(boss.pos);
 
@@ -1261,14 +1625,19 @@ if (isTouch){
   function holdRepeat(id, action, interval){
     const el = document.getElementById(id);
     let timer = null;
+    const stop = () => { if (timer){ clearInterval(timer); timer = null; } };
     el.addEventListener("touchstart", (e) => {
+      // FIX bug auto-fire: sentuhan kedua dulu menimpa timer tanpa clear,
+      // sehingga interval lama bocor & menembak terus. Selalu stop dulu.
+      stop();
       action();
       timer = setInterval(action, interval);
       e.preventDefault();
     }, {passive:false});
-    const stop = () => { if (timer){ clearInterval(timer); timer = null; } };
     el.addEventListener("touchend", stop);
     el.addEventListener("touchcancel", stop);
+    // pengaman ekstra: semua jari terangkat = pasti berhenti
+    window.addEventListener("touchend", (e) => { if (e.touches.length === 0) stop(); });
   }
   holdRepeat("btnMine", primaryAction, 230);
   holdRepeat("btnPlace", placeBlock, 260);
@@ -1293,7 +1662,7 @@ function resize(){
 addEventListener("resize", resize); resize();
 
 let last = performance.now(), fps = 0, fpsT = 0, fpsC = 0;
-let dayT = 0, gameTime = 0;
+let dayT = 0, gameTime = 0, portalCd = 0;
 const DAY_LEN = 240;
 
 function step(dt){
@@ -1364,6 +1733,23 @@ function step(dt){
     player.vel.set(0,0,0);
   }
 
+  // teleport lewat portal
+  portalCd = Math.max(0, portalCd - dt);
+  if (portalCd <= 0 && !player.dead){
+    const fx = Math.floor(player.pos.x), fz = Math.floor(player.pos.z);
+    const fy1 = Math.floor(player.pos.y + 0.2), fy2 = Math.floor(player.pos.y + 1.2);
+    const dest = portalCells.get(key(fx, fy1, fz)) || portalCells.get(key(fx, fy2, fz));
+    if (dest){
+      spawnParticles(eyePos(), 0x8d3fd4, 12, 4);
+      const h = terrainH(dest.x, dest.z);
+      player.pos.set(dest.x + 2, h + 1.1, dest.z + 1.5);
+      player.vel.set(0, 0, 0);
+      portalCd = 3;
+      playTeleport();
+      spawnParticles(eyePos(), 0x8d3fd4, 12, 4);
+    }
+  }
+
   camera.position.set(player.pos.x, player.pos.y + player.eye, player.pos.z);
   camera.rotation.set(0,0,0);
   camera.rotateY(player.yaw);
@@ -1407,7 +1793,8 @@ function loop(now){
     "<br>XYZ: " + player.pos.x.toFixed(1) + ", " + player.pos.y.toFixed(1) + ", " + player.pos.z.toFixed(1) +
     "<br>Item: " + itemName +
     (player.fly ? "<br>\u2708 Mode Terbang: ON" : "") +
-    "<br>Boss dikalahkan: " + boss.kills;
+    "<br>Boss dikalahkan: " + boss.kills + " / " + BOSS_ROSTER.length +
+    (boss.allDead ? " \u2705 MENANG!" : "");
   if (item.kind === "gun"){
     ammoEl.style.display = playing ? "block" : "none";
     ammoEl.textContent = gun.reloading > 0 ? "ISI ULANG..." : ("\uD83D\uDD2B " + gun.ammo + " / " + gun.mag);
