@@ -126,7 +126,7 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
-    <b style="color:#ff8a80">⚠ 22 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Raja Laba-Laba, Ninja, Kraken, Godzilla, Ghidorah, Kembaran Jahat, sampai WITHERZILLA!</b><br>
+    <b style="color:#ff8a80">⚠ 26 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Ninja, Kraken, Godzilla, Ghidorah, Hantu, Verity, Falsity, Lovity, sampai WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
     <b style="color:#8ad4ff">🌊 Boss laut hidup di lautan antar pulau — mereka mati jika terdampar di darat!</b><br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
@@ -948,6 +948,38 @@ const BOSS_TYPES = {
     hw:2.0, hh:7.0, color:0xd4af37, roar:playRoar,
     build:()=>buildGhidorahModel(), locName:"DI PULAU SALJU", locPos:{x:28, z:20},
   },
+  hantu: {
+    name:"HANTU", baseHp:300, speed:4.5,
+    melee:5, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.4, projMin:4, projMax:30, projStyle:"web", projDmg:3, projSpeed:16, burst:2,
+    canTeleport:true, fly:true, hover:3.5, needsNight:true,
+    hw:0.7, hh:2.6, color:0xdfe8f0, roar:playRoar,
+    build:()=>buildHantuModel(), locName:"DI DEKATMU (MALAM HARI)", locPos:null,
+  },
+  verity: {
+    name:"VERITY", baseHp:380, speed:4.0,
+    melee:6, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.2, projMin:4, projMax:36, projStyle:"beam", projDmg:4, projSpeed:20, burst:2,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.6, hh:2.8, color:0xf0ead0, roar:playRoar,
+    build:()=>buildVerityModel(), locName:"DI PULAU END", locPos:{x:110, z:98},
+  },
+  falsity: {
+    name:"FALSITY", baseHp:380, speed:4.4,
+    melee:6, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.2, projMin:4, projMax:36, projStyle:"skull", projDmg:4, projSpeed:18, burst:3,
+    canTeleport:true, fly:false, hover:0,
+    hw:0.6, hh:2.8, color:0x2a1a3a, roar:playLaugh,
+    build:()=>buildFalsityModel(), locName:"DI KOTA KUNO", locPos:{x:98, z:28},
+  },
+  lovity: {
+    name:"LOVITY", baseHp:360, speed:4.0,
+    melee:5, meleeRange:3.0, meleeHit:3.6,
+    projCd:2.0, projMin:3, projMax:34, projStyle:"spore", projDmg:3, projSpeed:16, burst:3,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.6, hh:2.8, color:0xe86ad0, roar:playRoar,
+    build:()=>buildLovityModel(), locName:"DI PULAU JAMUR", locPos:{x:18, z:110},
+  },
   witherzilla: {
     name:"WITHERZILLA", baseHp:500, speed:2.2,
     melee:7, meleeRange:5.5, meleeHit:6.5,
@@ -958,8 +990,8 @@ const BOSS_TYPES = {
   },
 };
 const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","spider","warden","slime","wither",
-  "ninja","elgranmaja","shroomgolem","shadow","thebloop","kraken","dragon","sunboss",
-  "seahand","ningen","evilclone","godzilla","ghidorah","witherzilla"];
+  "ninja","elgranmaja","shroomgolem","shadow","hantu","thebloop","kraken","dragon","sunboss",
+  "seahand","ningen","verity","falsity","lovity","evilclone","godzilla","ghidorah","witherzilla"];
 let curDayAmt = 1; // 0 = malam, 1 = siang terang (untuk boss yang butuh pagi)
 const boss = {
   alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
@@ -1620,6 +1652,97 @@ function buildGhidorahModel(){
   g.scale.set(1.8, 1.8, 1.8);
   return { group:g, parts:{armL, armR, legL, legR, head:body}, flashMats:[gold, dGold, wingM] };
 }
+function buildHantuModel(){
+  // hantu putih transparan yang melayang di malam hari
+  const g = new THREE.Group();
+  const ghost = new THREE.MeshLambertMaterial({ color:0xdfe8f0, transparent:true, opacity:0.55 });
+  const dark = new THREE.MeshBasicMaterial({ color:0x14181f });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.4, 0.7), ghost);
+  body.position.y = 1.9;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.8, 0.75), ghost);
+  head.position.y = 3.0; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.05), dark);
+  eyeL.position.set(-0.18, 3.05, 0.39); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.18; eyeR.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.28, 0.05), dark);
+  mouth.position.set(0, 2.78, 0.39); mouth.userData.head = true;
+  // ekor berjumbai menggantikan kaki
+  for (const [tx, ty] of [[-0.3, 1.0], [0, 0.85], [0.3, 1.0]]){
+    const wisp = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.5), ghost);
+    wisp.position.set(tx, ty, 0);
+    g.add(wisp);
+  }
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.9, 0.26), ghost);
+  armMesh.position.y = -0.4;
+  armL.add(armMesh); armL.position.set(-0.68, 2.5, 0);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.68, 2.5, 0);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, head, eyeL, eyeR, mouth, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[ghost] };
+}
+function buildRobedModel(colors){
+  // sosok berjubah (dipakai Verity / Falsity / Lovity)
+  const g = new THREE.Group();
+  const robe = lam(colors.robe), robe2 = lam(colors.robe2);
+  const eye = new THREE.MeshBasicMaterial({ color:colors.eye });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.5, 0.6), robe);
+  body.position.y = 1.85;
+  const skirt = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.1, 0.75), robe2);
+  skirt.position.y = 0.75;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.72, 0.72), robe2);
+  head.position.y = 2.95; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.05), eye);
+  eyeL.position.set(-0.16, 3.0, 0.38); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.16; eyeR.userData.head = true;
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.25, 0.3), robe);
+  armMesh.position.y = -0.55;
+  armL.add(armMesh); armL.position.set(-0.7, 2.45, 0);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.7, 2.45, 0);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, skirt, head, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[robe, robe2], head };
+}
+function buildVerityModel(){
+  // Verity: sosok cahaya kebenaran dengan halo emas
+  const built = buildRobedModel({ robe:0xf0ead0, robe2:0xe0d8b8, eye:0x4db8ff });
+  const halo = new THREE.MeshBasicMaterial({ color:0xffd23f });
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.07, 6, 14), halo);
+  ring.position.y = 3.55; ring.rotation.x = Math.PI/2; ring.userData.head = true;
+  built.group.add(ring);
+  return built;
+}
+function buildFalsityModel(){
+  // Falsity: cermin gelap Verity, halo patah
+  const built = buildRobedModel({ robe:0x2a1a3a, robe2:0x1c1128, eye:0xff3b2f });
+  const halo = new THREE.MeshBasicMaterial({ color:0x8d3fd4 });
+  for (const side of [-1, 1]){
+    const half = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.08, 0.08), halo);
+    half.position.set(side*0.3, 3.55 + side*0.08, 0);
+    half.rotation.z = side*0.5;
+    half.userData.head = true;
+    built.group.add(half);
+  }
+  return built;
+}
+function buildLovityModel(){
+  // Lovity: sosok cinta dengan hati di dada & mahkota hati
+  const built = buildRobedModel({ robe:0xe86ad0, robe2:0xd050b8, eye:0xffffff });
+  const heartM = new THREE.MeshBasicMaterial({ color:0xe8203a });
+  const hc = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.3, 0.08), heartM);
+  hc.position.set(0, 1.95, 0.35); hc.rotation.z = Math.PI/4;
+  const hl = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.08), heartM);
+  hl.position.set(-0.12, 2.12, 0.35);
+  const hr = hl.clone(); hr.position.x = 0.12;
+  built.group.add(hc, hl, hr);
+  for (const sx of [-0.22, 0, 0.22]){
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.14), heartM);
+    crown.position.set(sx, 3.45, 0); crown.rotation.z = Math.PI/4; crown.userData.head = true;
+    built.group.add(crown);
+  }
+  return built;
+}
 
 function spawnBoss(){
   boss.type = BOSS_ROSTER[boss.idx];
@@ -1789,9 +1912,10 @@ function updateBoss(dt, time){
     if (playing && !player.dead){
       boss.spawnTimer -= dt;
       if (boss.spawnTimer <= 0){
-        // boss langit menunggu pagi/siang hari sebelum muncul
+        // boss langit menunggu pagi/siang; boss hantu menunggu malam
         const nextDef = BOSS_TYPES[BOSS_ROSTER[boss.idx]];
-        if (!nextDef.needsDay || curDayAmt > 0.5) spawnBoss();
+        if ((!nextDef.needsDay || curDayAmt > 0.5) &&
+            (!nextDef.needsNight || curDayAmt < 0.5)) spawnBoss();
       }
     }
     return;
