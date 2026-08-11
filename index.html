@@ -126,7 +126,7 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
-    <b style="color:#ff8a80">⚠ 24 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Ninja, Kraken, Godzilla, Ghidorah, Hantu, Robot, sampai WITHERZILLA!</b><br>
+    <b style="color:#ff8a80">⚠ 28 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Golem Lava, Spiderman, Tentakel Laut, Hiu End, Godzilla, Ghidorah, Robot, sampai WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
     <b style="color:#8ad4ff">🌊 Boss laut hidup di lautan antar pulau — mereka mati jika terdampar di darat!</b><br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
@@ -956,6 +956,38 @@ const BOSS_TYPES = {
     hw:0.7, hh:2.6, color:0xdfe8f0, roar:playRoar,
     build:()=>buildHantuModel(), locName:"DI DEKATMU (MALAM HARI)", locPos:null,
   },
+  lavagolem: {
+    name:"GOLEM LAVA", baseHp:340, speed:2.8,
+    melee:6, meleeRange:3.0, meleeHit:3.8,
+    projCd:2.4, projMin:4, projMax:26, projStyle:"fire", projDmg:4, projSpeed:16, burst:3,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.75, hh:3.2, color:0xff6a10, roar:playRoar,
+    build:()=>buildLavaGolemModel(), locName:"DI PULAU UTAMA", locPos:{x:54, z:64},
+  },
+  tentacle: {
+    name:"TENTAKEL LAUT", baseHp:360, speed:4.0,
+    melee:7, meleeRange:4.5, meleeHit:5.2,
+    projCd:2.6, projMin:3, projMax:34, projStyle:"ink", projDmg:4, projSpeed:16, burst:2,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1.5, leaps:true,
+    hw:1.0, hh:5.5, color:0x3a5a4a, roar:playRoar,
+    build:()=>buildTentacleModel(), locName:"DI LAUT (MELOMPAT!)", locPos:{x:64, z:104},
+  },
+  spiderman: {
+    name:"SPIDERMAN", baseHp:320, speed:5.2,
+    melee:6, meleeRange:2.8, meleeHit:3.4,
+    projCd:1.8, projMin:3, projMax:32, projStyle:"web", projDmg:3, projSpeed:24, burst:3,
+    canTeleport:false, fly:false, hover:0, perch:9, jumpPower:15, jumpCd:3,
+    hw:0.6, hh:2.6, color:0xc4202a, roar:playRoar,
+    build:()=>buildSpidermanModel(), locName:"DI ATAS POHON", locPos:{x:70, z:58},
+  },
+  endshark: {
+    name:"HIU END", baseHp:420, speed:5.0,
+    melee:7, meleeRange:3.6, meleeHit:4.2,
+    projCd:2.2, projMin:3, projMax:34, projStyle:"dragon", projDmg:4, projSpeed:20, burst:2,
+    canTeleport:false, fly:false, hover:0, aquatic:true, depth:1.2,
+    hw:0.9, hh:2.4, color:0x9a6ad0, roar:playRoar,
+    build:()=>buildEndSharkModel(), locName:"DI LAUT DEKAT PULAU END", locPos:{x:116, z:116},
+  },
   robot: {
     name:"ROBOT", baseHp:400, speed:3.4,
     melee:6, meleeRange:3.0, meleeHit:3.6,
@@ -974,8 +1006,9 @@ const BOSS_TYPES = {
   },
 };
 const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","spider","warden","slime","wither",
-  "ninja","elgranmaja","shroomgolem","shadow","hantu","thebloop","kraken","dragon","sunboss",
-  "seahand","ningen","robot","evilclone","godzilla","ghidorah","witherzilla"];
+  "spiderman","ninja","elgranmaja","lavagolem","shroomgolem","shadow","hantu","tentacle",
+  "thebloop","kraken","dragon","endshark","sunboss","seahand","ningen","robot",
+  "evilclone","godzilla","ghidorah","witherzilla"];
 let curDayAmt = 1; // 0 = malam, 1 = siang terang (untuk boss yang butuh pagi)
 const boss = {
   alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
@@ -1700,6 +1733,142 @@ function buildRobotModel(){
   g.add(body, chest, waist, head, vis, antenna, antTip, armL, armR, legL, legR);
   return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[metal, dark, joint] };
 }
+function buildLavaGolemModel(){
+  // golem batu hitam dengan retakan lava menyala
+  const built = buildGolemModel({ body:0x2e2622, limb:0x1f1a17, chest:0xff6a10, eye:0xffd23f });
+  const lava = new THREE.MeshBasicMaterial({ color:0xff6a10 });
+  const ember = new THREE.MeshBasicMaterial({ color:0xffb020 });
+  // retakan lava di badan & lengan
+  for (const [cx, cy, cz, w, h] of [
+        [-0.35, 1.75, 0.41, 0.14, 0.5], [0.3, 1.5, 0.41, 0.12, 0.4],
+        [0.0, 1.9, 0.41, 0.5, 0.12], [-0.9, 1.6, 0.22, 0.1, 0.6],
+        [0.9, 1.5, 0.22, 0.1, 0.5]]){
+    const crack = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.06), lava);
+    crack.position.set(cx, cy, cz);
+    built.group.add(crack);
+  }
+  // bara di bahu
+  for (const sx of [-0.55, 0, 0.55]){
+    const e = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.18, 0.18), ember);
+    e.position.set(sx, 2.28, 0);
+    built.group.add(e);
+  }
+  return built;
+}
+function buildTentacleModel(){
+  // tentakel raksasa bermulut penghisap yang melompat dari laut
+  const g = new THREE.Group();
+  const skin = lam(0x3a5a4a), dark = lam(0x2a4436);
+  const sucker = new THREE.MeshBasicMaterial({ color:0xe0d0b8 });
+  const maw = new THREE.MeshBasicMaterial({ color:0x8a1030 });
+  const eye = new THREE.MeshBasicMaterial({ color:0xffe14d });
+  // batang tentakel bersegmen, makin ke atas makin ramping
+  for (let i=0; i<6; i++){
+    const w = 1.3 - i*0.14;
+    const seg = new THREE.Mesh(new THREE.BoxGeometry(w, 0.95, w), i%2 ? dark : skin);
+    seg.position.set(Math.sin(i*0.8)*0.28, 0.5 + i*0.9, Math.cos(i*0.8)*0.18);
+    g.add(seg);
+    // penghisap di sisi depan
+    const s = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 0.06), sucker);
+    s.position.set(Math.sin(i*0.8)*0.28, 0.5 + i*0.9, Math.cos(i*0.8)*0.18 + w/2 + 0.02);
+    g.add(s);
+  }
+  // ujung: mulut menganga
+  const tip = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.8, 0.95), dark);
+  tip.position.set(Math.sin(4.8)*0.28, 5.7, Math.cos(4.8)*0.18);
+  tip.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.3, 0.1), maw);
+  mouth.position.set(tip.position.x, 5.65, tip.position.z + 0.5);
+  mouth.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.06), eye);
+  eyeL.position.set(tip.position.x - 0.25, 5.95, tip.position.z + 0.5);
+  eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = tip.position.x + 0.25; eyeR.userData.head = true;
+  g.add(tip, mouth, eyeL, eyeR);
+  // sepasang tentakel kecil yang dianimasikan
+  const armL = new THREE.Group();
+  const subL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 2.2, 0.3), skin);
+  subL.position.y = -0.9;
+  armL.add(subL); armL.position.set(-0.8, 2.6, 0.4);
+  const armR = new THREE.Group();
+  armR.add(subL.clone()); armR.position.set(0.8, 2.6, 0.4);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head:tip}, flashMats:[skin, dark] };
+}
+function buildSpidermanModel(){
+  // manusia laba-laba merah-biru bermata putih, bertengger di pohon
+  const g = new THREE.Group();
+  const red = lam(0xc4202a), blue = lam(0x1a3a8a);
+  const eye = new THREE.MeshBasicMaterial({ color:0xf0f0f0 });
+  const webM = new THREE.MeshBasicMaterial({ color:0x101010 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.25, 0.5), blue);
+  body.position.y = 1.72;
+  const chest = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.6, 0.52), red);
+  chest.position.y = 2.1;
+  // lambang laba-laba di dada
+  const emblem = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.05), webM);
+  emblem.position.set(0, 2.1, 0.28);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), red);
+  head.position.y = 2.8; head.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.16, 0.05), eye);
+  eyeL.position.set(-0.17, 2.85, 0.37); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.17; eyeR.userData.head = true;
+  // garis jaring di kepala
+  for (const hy of [2.68, 2.96]){
+    const line = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.03, 0.03), webM);
+    line.position.set(0, hy, 0.36); line.userData.head = true;
+    g.add(line);
+  }
+  const armL = new THREE.Group();
+  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 1.2, 0.3), red);
+  armMesh.position.y = -0.5;
+  armL.add(armMesh); armL.position.set(-0.65, 2.3, 0);
+  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.65, 2.3, 0);
+  const legL = new THREE.Group();
+  const legMesh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 1.1, 0.4), blue);
+  legMesh.position.y = -0.55;
+  legL.add(legMesh); legL.position.set(-0.25, 1.1, 0);
+  const legR = new THREE.Group(); legR.add(legMesh.clone()); legR.position.set(0.25, 1.1, 0);
+  g.add(body, chest, emblem, head, eyeL, eyeR, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[red, blue] };
+}
+function buildEndSharkModel(){
+  // hiu End keunguan bercahaya dari laut Pulau End
+  const g = new THREE.Group();
+  const skin = lam(0x9a6ad0), belly = lam(0xd8c8f0), fin = lam(0x7a4ab0);
+  const glow = new THREE.MeshBasicMaterial({ color:0xd06cff });
+  const teeth = new THREE.MeshBasicMaterial({ color:0xf0f0f0 });
+  const body = new THREE.Mesh(new THREE.BoxGeometry(1.15, 1.05, 3.2), skin);
+  body.position.y = 1.2;
+  const under = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.42, 2.8), belly);
+  under.position.y = 0.72;
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.9, 1.2), skin);
+  head.position.set(0, 1.2, 2.1); head.userData.head = true;
+  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.18, 0.28), teeth);
+  mouth.position.set(0, 0.92, 2.6); mouth.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.14, 0.14), glow);
+  eyeL.position.set(-0.52, 1.42, 2.05); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.52; eyeR.userData.head = true;
+  const dorsal = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.0, 0.95), fin);
+  dorsal.position.set(0, 2.05, 0.2);
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.12, 2.6), glow);
+  stripe.position.set(0.6, 1.35, 0.1);
+  const stripe2 = stripe.clone(); stripe2.position.x = -0.6;
+  const tailFin = new THREE.Mesh(new THREE.BoxGeometry(0.18, 1.2, 0.75), fin);
+  tailFin.position.set(0, 1.45, -1.9);
+  const armL = new THREE.Group();
+  const finL = new THREE.Mesh(new THREE.BoxGeometry(1.1, 0.15, 0.65), fin);
+  finL.position.x = -0.8;
+  armL.add(finL); armL.position.set(-0.55, 1.0, 0.9);
+  const armR = new THREE.Group();
+  const finR = finL.clone(); finR.position.x = 0.8;
+  armR.add(finR); armR.position.set(0.55, 1.0, 0.9);
+  const legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(body, under, head, mouth, eyeL, eyeR, dorsal, stripe, stripe2, tailFin,
+        armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[skin, belly, fin] };
+}
 
 function spawnBoss(){
   boss.type = BOSS_ROSTER[boss.idx];
@@ -1730,8 +1899,10 @@ function spawnBoss(){
   if (boss.def.aquatic)
     boss.pos.set(sx+0.5, WATER_LEVEL - (boss.def.depth || 1), sz+0.5);
   else
-    boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0), sz+0.5);
+    boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0)
+                                            + (boss.def.perch || 0), sz+0.5);
   boss.vy = 0; boss.onGround = false; boss.beachT = 0;
+  boss.leapT = 0; boss.leapCd = 3; boss.jumpT = boss.def.jumpCd || 0;
   boss.maxHp = boss.def.baseHp;
   boss.hp = boss.maxHp;
   boss.dying = false; boss.dieT = 0;
@@ -1955,8 +2126,31 @@ function updateBoss(dt, time){
     boss.pos.x = Math.max(2, Math.min(WORLD-2, boss.pos.x));
     boss.pos.z = Math.max(2, Math.min(WORLD-2, boss.pos.z));
     const swimY = WATER_LEVEL - (def.depth || 1);
-    boss.pos.y += (swimY - boss.pos.y) * Math.min(1, dt*2);
-    boss.vy = 0; boss.onGround = false;
+    if (def.leaps){
+      // melompat keluar dari laut, lalu jatuh kembali dengan cipratan
+      boss.leapCd = Math.max(0, (boss.leapCd || 0) - dt);
+      if (boss.leapT > 0){
+        boss.leapT -= dt;
+        boss.vy -= 20*dt;
+        boss.pos.y += boss.vy*dt;
+        if (boss.pos.y <= swimY && boss.vy < 0){
+          boss.pos.y = swimY; boss.vy = 0; boss.leapT = 0;
+          spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), 0x3b8bd4, 16, 5);
+          playTone(180, 0.2, "sawtooth", 0.16);
+        }
+      } else if (boss.leapCd <= 0 && engaged && dist < 24){
+        boss.leapT = 3; boss.vy = 13; boss.leapCd = 5.5;
+        spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), 0x3b8bd4, 20, 6);
+        playRoar();
+      } else {
+        boss.pos.y += (swimY - boss.pos.y) * Math.min(1, dt*2);
+        boss.vy = 0;
+      }
+    } else {
+      boss.pos.y += (swimY - boss.pos.y) * Math.min(1, dt*2);
+      boss.vy = 0;
+    }
+    boss.onGround = false;
     // ATURAN: boss laut mati jika ke darat (terdampar = HP terkuras cepat)
     if (terrainH(boss.pos.x, boss.pos.z) >= WATER_LEVEL){
       boss.beachT = (boss.beachT || 0) + dt;
@@ -1975,6 +2169,16 @@ function updateBoss(dt, time){
       if (!bCollides(boss.pos.x, boss.pos.y, tz)) boss.pos.z = tz; else blocked = true;
       if (blocked && boss.onGround) boss.vy = 8.5;
       moving = 1;
+    }
+    // lompatan tinggi berkala (Spiderman melompat antar pohon)
+    if (def.jumpPower){
+      boss.jumpT = Math.max(0, (boss.jumpT || 0) - dt);
+      if (boss.jumpT <= 0 && engaged && boss.onGround){
+        boss.vy = def.jumpPower;
+        boss.jumpT = def.jumpCd || 3;
+        boss.onGround = false;
+        playTone(760, 0.1, "square", 0.12);
+      }
     }
     // gravitasi
     boss.vy -= 22*dt;
