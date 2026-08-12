@@ -24,6 +24,15 @@
     background:#5b9e3c; border:3px solid #1c1c1c; box-shadow:0 5px 0 #38652a;
     transition:transform .05s; }
   #playBtn:active { transform:translateY(4px); box-shadow:0 1px 0 #38652a; }
+  #btnRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  #allBossBtn { font-family:inherit; font-size:20px; font-weight:900; letter-spacing:2px;
+    padding:14px 34px; cursor:pointer; color:#fff;
+    background:#a3323c; border:3px solid #1c1c1c; box-shadow:0 5px 0 #6b1f26;
+    transition:transform .05s; }
+  #allBossBtn:active { transform:translateY(4px); box-shadow:0 1px 0 #6b1f26; }
+  @media (max-width:560px){
+    #playBtn, #allBossBtn { font-size:16px; padding:12px 24px; }
+  }
   #genInfo { color:#dfe9ff; font-size:12px; text-shadow:1px 1px 0 #223; }
 
   /* ---------- HUD ---------- */
@@ -126,13 +135,17 @@
     <b>Kontrol (HP)</b> — joystick jalan • geser layar lihat<br>
     ⛏ hancurkan/tembak • 🧱 pasang • ⬆ lompat/naik<br>
     ✈ mode terbang • ⬇ turun • ↻ isi ulang • ⚡ atur kecepatan lari<br><br>
-    <b style="color:#ff8a80">⚠ 28 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Golem Lava, Spiderman, Tentakel Laut, Hiu End, Godzilla, Ghidorah, Robot, sampai WITHERZILLA!</b><br>
+    <b style="color:#ff8a80">⚠ 29 BOSS menantimu di darat, laut &amp; langit — dari Golem Batu, Ular Raksasa, Naga Pelangi, Spiderman, Tentakel Laut, Godzilla, Ghidorah, sampai WITHERZILLA!</b><br>
     Kalahkan semuanya untuk MENANG! Tembakan kepala = damage ganda!<br>
     <b style="color:#8ad4ff">🌊 Boss laut hidup di lautan antar pulau — mereka mati jika terdampar di darat!</b><br>
     <b style="color:#c9a0ff">🌀 Portal di pulau utama menuju: Pulau Salju, Kota Kuno, Pulau Jamur &amp; Pulau End</b>
   </div>
-  <button id="playBtn">▶ MAIN</button>
-  <div id="genInfo">Dunia dibuat acak setiap kali dimuat ulang</div>
+  <div id="btnRow">
+    <button id="playBtn">▶ MAIN</button>
+    <button id="allBossBtn">💀 ALL BOSS</button>
+  </div>
+  <div id="genInfo">Dunia dibuat acak setiap kali dimuat ulang<br>
+    <b>ALL BOSS</b> = semua boss muncul bersamaan!</div>
 </div>
 
 <div id="crosshair"></div>
@@ -948,13 +961,21 @@ const BOSS_TYPES = {
     hw:2.0, hh:7.0, color:0xd4af37, roar:playRoar,
     build:()=>buildGhidorahModel(), locName:"DI PULAU SALJU", locPos:{x:28, z:20},
   },
-  hantu: {
-    name:"HANTU", baseHp:300, speed:4.5,
-    melee:5, meleeRange:3.0, meleeHit:3.6,
-    projCd:2.4, projMin:4, projMax:30, projStyle:"web", projDmg:3, projSpeed:16, burst:2,
-    canTeleport:true, fly:true, hover:3.5, needsNight:true,
-    hw:0.7, hh:2.6, color:0xdfe8f0, roar:playRoar,
-    build:()=>buildHantuModel(), locName:"DI DEKATMU (MALAM HARI)", locPos:null,
+  rainbowdragon: {
+    name:"NAGA PELANGI", baseHp:450, speed:5.2,
+    melee:6, meleeRange:3.8, meleeHit:4.4,
+    projCd:2.0, projMin:3, projMax:42, projStyle:"rainbow", projDmg:4, projSpeed:19, burst:3,
+    canTeleport:false, fly:true, hover:8, circle:10, rainbow:true,
+    hw:1.4, hh:3.5, color:0xff40a0, roar:playRoar,
+    build:()=>buildRainbowDragonModel(), locName:"DI LANGIT PULAU UTAMA", locPos:{x:64, z:78},
+  },
+  snake: {
+    name:"ULAR RAKSASA", baseHp:330, speed:4.8,
+    melee:6, meleeRange:3.2, meleeHit:3.8,
+    projCd:2.2, projMin:4, projMax:30, projStyle:"spore", projDmg:3, projSpeed:18, burst:2,
+    canTeleport:false, fly:false, hover:0,
+    hw:0.8, hh:2.0, color:0x4a8a2e, roar:playRoar,
+    build:()=>buildSnakeModel(), locName:"DI PULAU JAMUR", locPos:{x:34, z:110},
   },
   lavagolem: {
     name:"GOLEM LAVA", baseHp:340, speed:2.8,
@@ -1006,19 +1027,19 @@ const BOSS_TYPES = {
   },
 };
 const BOSS_ROSTER = ["golem","mojang","redgolem","seaeater","spider","warden","slime","wither",
-  "spiderman","ninja","elgranmaja","lavagolem","shroomgolem","shadow","hantu","tentacle",
+  "spiderman","snake","ninja","elgranmaja","lavagolem","shroomgolem","shadow","tentacle",
   "thebloop","kraken","dragon","endshark","sunboss","seahand","ningen","robot",
-  "evilclone","godzilla","ghidorah","witherzilla"];
+  "evilclone","rainbowdragon","godzilla","ghidorah","witherzilla"];
 let curDayAmt = 1; // 0 = malam, 1 = siang terang (untuk boss yang butuh pagi)
-const boss = {
-  alive:false, type:"golem", def:BOSS_TYPES.golem, idx:0, allDead:false,
-  group:null, parts:null, flashMats:[],
-  pos:new THREE.Vector3(), vy:0, onGround:false,
-  hp:100, maxHp:100, kills:0,
-  attackT:0, attackCd:0, projCd:0, teleCd:0,
-  burstLeft:0, burstT:0,
-  hurtT:0, dieT:0, dying:false,
-  spawnTimer:12, warnT:0,
+/* Boss aktif disimpan sebagai array agar mode "SEMUA BOSS" bisa menampilkan
+   seluruh roster sekaligus; mode normal cukup mengisi array dengan 1 boss. */
+const bosses = [];
+const prog = {
+  idx:0,           // boss ke berapa dalam roster (mode satu-satu)
+  kills:0, allDead:false,
+  spawnTimer:12,   // hitung mundur boss berikutnya
+  warnT:0,         // sisa waktu teks peringatan
+  allMode:false,   // true = semua boss spawn bersamaan
 };
 const bossbar = document.getElementById("bossbar");
 const bossnameEl = document.getElementById("bossname");
@@ -1669,34 +1690,50 @@ function buildGhidorahModel(){
   g.scale.set(1.8, 1.8, 1.8);
   return { group:g, parts:{armL, armR, legL, legR, head:body}, flashMats:[gold, dGold, wingM] };
 }
-function buildHantuModel(){
-  // hantu putih transparan yang melayang di malam hari
-  const g = new THREE.Group();
-  const ghost = new THREE.MeshLambertMaterial({ color:0xdfe8f0, transparent:true, opacity:0.55 });
-  const dark = new THREE.MeshBasicMaterial({ color:0x14181f });
-  const body = new THREE.Mesh(new THREE.BoxGeometry(1.0, 1.4, 0.7), ghost);
-  body.position.y = 1.9;
-  const head = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.8, 0.75), ghost);
-  head.position.y = 3.0; head.userData.head = true;
-  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.22, 0.05), dark);
-  eyeL.position.set(-0.18, 3.05, 0.39); eyeL.userData.head = true;
-  const eyeR = eyeL.clone(); eyeR.position.x = 0.18; eyeR.userData.head = true;
-  const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.28, 0.05), dark);
-  mouth.position.set(0, 2.78, 0.39); mouth.userData.head = true;
-  // ekor berjumbai menggantikan kaki
-  for (const [tx, ty] of [[-0.3, 1.0], [0, 0.85], [0.3, 1.0]]){
-    const wisp = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.7, 0.5), ghost);
-    wisp.position.set(tx, ty, 0);
-    g.add(wisp);
+function buildRainbowDragonModel(){
+  // naga terbang yang warnanya terus berganti (lihat flag rainbow di updateBoss)
+  const built = buildDragonModel();
+  // sisik pelangi di punggung agar pergantian warna terlihat jelas
+  for (let i=0; i<5; i++){
+    const scale = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.45, 0.3), built.flashMats[i % 3]);
+    scale.position.set(0, 3.0, 1.0 - i*0.6);
+    built.group.add(scale);
   }
-  const armL = new THREE.Group();
-  const armMesh = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.9, 0.26), ghost);
-  armMesh.position.y = -0.4;
-  armL.add(armMesh); armL.position.set(-0.68, 2.5, 0);
-  const armR = new THREE.Group(); armR.add(armMesh.clone()); armR.position.set(0.68, 2.5, 0);
-  const legL = new THREE.Group(), legR = new THREE.Group();
-  g.add(body, head, eyeL, eyeR, mouth, armL, armR, legL, legR);
-  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[ghost] };
+  return built;
+}
+function buildSnakeModel(){
+  // ular raksasa hijau bertaring, tubuh bersegmen meliuk
+  const g = new THREE.Group();
+  const green = lam(0x4a8a2e), dark = lam(0x35651f), belly = lam(0xc8d88a);
+  const eye = new THREE.MeshBasicMaterial({ color:0xffd23f });
+  const fang = new THREE.MeshBasicMaterial({ color:0xffffff });
+  const tongue = new THREE.MeshBasicMaterial({ color:0xd42a4a });
+  // badan bersegmen yang mengecil ke belakang
+  for (let i=0; i<7; i++){
+    const w = 0.95 - i*0.1;
+    const seg = new THREE.Mesh(new THREE.BoxGeometry(w, w*0.85, 1.1), i%2 ? dark : green);
+    seg.position.set(Math.sin(i*0.9)*0.45, 0.55 + Math.abs(Math.sin(i*0.9))*0.3, -i*1.05);
+    g.add(seg);
+    const ub = new THREE.Mesh(new THREE.BoxGeometry(w*0.7, 0.12, 1.0), belly);
+    ub.position.set(seg.position.x, seg.position.y - w*0.42, seg.position.z);
+    g.add(ub);
+  }
+  const head = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.8, 1.2), green);
+  head.position.set(0, 0.8, 1.1); head.userData.head = true;
+  const snout = new THREE.Mesh(new THREE.BoxGeometry(0.75, 0.45, 0.5), dark);
+  snout.position.set(0, 0.68, 1.85); snout.userData.head = true;
+  const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.16, 0.1), eye);
+  eyeL.position.set(-0.36, 1.05, 1.5); eyeL.userData.head = true;
+  const eyeR = eyeL.clone(); eyeR.position.x = 0.36; eyeR.userData.head = true;
+  const fangL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.3, 0.1), fang);
+  fangL.position.set(-0.22, 0.42, 1.95); fangL.userData.head = true;
+  const fangR = fangL.clone(); fangR.position.x = 0.22; fangR.userData.head = true;
+  const tng = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.06, 0.7), tongue);
+  tng.position.set(0, 0.55, 2.4); tng.userData.head = true;
+  const armL = new THREE.Group(), armR = new THREE.Group(),
+        legL = new THREE.Group(), legR = new THREE.Group();
+  g.add(head, snout, eyeL, eyeR, fangL, fangR, tng, armL, armR, legL, legR);
+  return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[green, dark, belly] };
 }
 function buildRobotModel(){
   // robot baja dengan visor merah menyala & antena
@@ -1870,20 +1907,25 @@ function buildEndSharkModel(){
   return { group:g, parts:{armL, armR, legL, legR, head}, flashMats:[skin, belly, fin] };
 }
 
-function spawnBoss(){
-  boss.type = BOSS_ROSTER[boss.idx];
-  boss.def = BOSS_TYPES[boss.type];
-  const built = boss.def.build();
-  boss.group = built.group; boss.parts = built.parts; boss.flashMats = built.flashMats;
+/* Titik spawn: pakai lokasi tetap milik boss, atau cari daratan dekat pemain.
+   `spread` menyebar boss agar tidak saling tumpuk di mode SEMUA BOSS. */
+function bossSpawnPoint(def, spread){
   let sx, sz;
-  if (boss.def.locPos){
-    sx = boss.def.locPos.x; sz = boss.def.locPos.z;
+  if (def.locPos){
+    sx = def.locPos.x; sz = def.locPos.z;
+    if (spread !== undefined){
+      const ox = Math.max(3, Math.min(WORLD-4, sx + Math.round(Math.cos(spread)*5)));
+      const oz = Math.max(3, Math.min(WORLD-4, sz + Math.round(Math.sin(spread)*5)));
+      // boss laut hanya boleh digeser bila titik barunya masih berair,
+      // kalau tidak ia langsung terdampar & mati begitu muncul
+      if (!def.aquatic || terrainH(ox, oz) < WATER_LEVEL){ sx = ox; sz = oz; }
+    }
   } else {
     // cari titik DARATAN dekat pemain — jangan spawn di laut (boss darat
     // bisa tenggelam & tak pernah terlihat). Radius mengecil tiap percobaan.
     let found = false;
     for (let attempt=0; attempt<30 && !found; attempt++){
-      const ang = Math.random()*Math.PI*2;
+      const ang = (spread !== undefined) ? spread : Math.random()*Math.PI*2;
       const rad = Math.max(6, 18 - attempt*0.4);
       sx = Math.round(player.pos.x + Math.cos(ang)*rad);
       sz = Math.round(player.pos.z + Math.sin(ang)*rad);
@@ -1896,40 +1938,55 @@ function spawnBoss(){
       sz = Math.max(3, Math.min(WORLD-4, Math.round(player.pos.z)));
     }
   }
-  if (boss.def.aquatic)
-    boss.pos.set(sx+0.5, WATER_LEVEL - (boss.def.depth || 1), sz+0.5);
-  else
-    boss.pos.set(sx+0.5, terrainH(sx,sz)+1 + (boss.def.fly ? boss.def.hover : 0)
-                                            + (boss.def.perch || 0), sz+0.5);
-  boss.vy = 0; boss.onGround = false; boss.beachT = 0;
-  boss.leapT = 0; boss.leapCd = 3; boss.jumpT = boss.def.jumpCd || 0;
-  boss.maxHp = boss.def.baseHp;
-  boss.hp = boss.maxHp;
-  boss.dying = false; boss.dieT = 0;
-  boss.attackT = 0; boss.attackCd = 1; boss.projCd = 2.5;
-  boss.teleCd = 7; boss.burstLeft = 0; boss.hurtT = 0;
-  boss.alive = true;
-  scene.add(boss.group);
-  bossnameEl.textContent = boss.def.name;
-  bossbar.style.display = "block";
-  bosswarn.textContent = "\u26A0 " + boss.def.name + " MUNCUL " + boss.def.locName + "! \u26A0";
-  bosswarn.style.display = "block"; boss.warnT = 4;
-  boss.def.roar();
-  spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1.5,0)), boss.def.color, 20, 5);
+  return { sx, sz };
 }
-function hurtBoss(amount, at){
-  if (!boss.alive || boss.dying) return;
-  boss.hp -= amount;
-  boss.hurtT = 0.18;
-  bosshpfill.style.width = Math.max(0, boss.hp/boss.maxHp*100) + "%";
-  if (at) spawnParticles(at, boss.def.color, 6, 3);
-  if (boss.hp <= 0){
-    boss.dying = true; boss.dieT = 1.2;
+function spawnBoss(type, spread, quiet){
+  const def = BOSS_TYPES[type];
+  const built = def.build();
+  const pt = bossSpawnPoint(def, spread);
+  const b = {
+    type, def, group:built.group, parts:built.parts, flashMats:built.flashMats,
+    pos:new THREE.Vector3(), vy:0, onGround:false, beachT:0,
+    leapT:0, leapCd:3, jumpT:def.jumpCd || 0,
+    maxHp:def.baseHp, hp:def.baseHp,
+    dying:false, dieT:0,
+    attackT:0, attackCd:1, projCd:2.5, teleCd:7, burstLeft:0, burstT:0, hurtT:0,
+  };
+  if (def.aquatic)
+    b.pos.set(pt.sx+0.5, WATER_LEVEL - (def.depth || 1), pt.sz+0.5);
+  else
+    b.pos.set(pt.sx+0.5, terrainH(pt.sx,pt.sz)+1 + (def.fly ? def.hover : 0)
+                                                 + (def.perch || 0), pt.sz+0.5);
+  b.group.position.copy(b.pos);
+  scene.add(b.group);
+  bosses.push(b);
+  if (!quiet){
+    bosswarn.textContent = "\u26A0 " + def.name + " MUNCUL " + def.locName + "! \u26A0";
+    bosswarn.style.display = "block"; prog.warnT = 4;
+    def.roar();
+  }
+  spawnParticles(b.pos.clone().add(new THREE.Vector3(0,1.5,0)), def.color, 20, 5);
+  return b;
+}
+function spawnAllBosses(){
+  for (let i=0; i<BOSS_ROSTER.length; i++)
+    spawnBoss(BOSS_ROSTER[i], (i / BOSS_ROSTER.length) * Math.PI*2, true);
+  bosswarn.textContent = "\u26A0 SEMUA " + BOSS_ROSTER.length + " BOSS MUNCUL! \u26A0";
+  bosswarn.style.display = "block"; prog.warnT = 5;
+  playRoar();
+}
+function hurtBoss(b, amount, at){
+  if (!b || b.dying) return;
+  b.hp -= amount;
+  b.hurtT = 0.18;
+  if (at) spawnParticles(at, b.def.color, 6, 3);
+  if (b.hp <= 0){
+    b.dying = true; b.dieT = 1.2;
     playBoom();
   }
 }
-function bCollides(px, py, pz){
-  const hw = boss.def.hw, hh = boss.def.hh;
+function bCollides(def, px, py, pz){
+  const hw = def.hw, hh = def.hh;
   for (const dx of [-hw, hw])
     for (const dz of [-hw, hw])
       for (const dy of [0.05, hh*0.5, hh-0.1])
@@ -1955,6 +2012,7 @@ const webMat   = new THREE.MeshBasicMaterial({ color:0xf0f0f0 });
 const laserMat = new THREE.MeshBasicMaterial({ color:0xff2020 });
 const shurMat  = new THREE.MeshBasicMaterial({ color:0xb8c0c8 });
 const beamMat  = new THREE.MeshBasicMaterial({ color:0xffe14d });
+const rbowMat  = new THREE.MeshBasicMaterial({ color:0xff40a0 }); // warnanya dianimasikan
 const PROJ_LOOK = {
   fire:   { geo:fireGeo,  mat:fireMat,  color:0xff7722, tone:520 },
   skull:  { geo:skullGeo, mat:skullMat, color:0x33333d, tone:380 },
@@ -1968,12 +2026,14 @@ const PROJ_LOOK = {
   laser:  { geo:fireGeo,  mat:laserMat, color:0xff2020, tone:980 },
   shuriken:{ geo:fireGeo, mat:shurMat,  color:0xb8c0c8, tone:900 },
   beam:   { geo:fireGeo,  mat:beamMat,  color:0xffe14d, tone:760 },
+  rainbow:{ geo:fireGeo,  mat:rbowMat,  color:0xff40a0, tone:820 },
 };
 
-function bossThrow(){
-  const def = boss.def;
-  const hand = boss.pos.clone().add(new THREE.Vector3(0, def.hh*0.75, 0));
+function bossThrow(b){
+  const def = b.def;
+  const hand = b.pos.clone().add(new THREE.Vector3(0, def.hh*0.75, 0));
   const target = player.pos.clone().add(new THREE.Vector3(0, 1, 0));
+  const from = b.pos.clone(); // sumber knockback saat proyektil kena pemain
   if (def.projStyle === "rock"){
     // golem: batu melengkung dengan gravitasi
     const dir = target.clone().sub(hand);
@@ -1983,7 +2043,7 @@ function bossThrow(){
     vel.y = 4 + dist*0.28 + dir.y*0.5;
     const m = new THREE.Mesh(rockGeo, rockMat);
     m.position.copy(hand);
-    projs.push({ mesh:m, vel, life:5, grav:20, dmg:def.projDmg, color:0x7a7a7a, spin:true });
+    projs.push({ mesh:m, vel, life:5, grav:20, dmg:def.projDmg, color:0x7a7a7a, spin:true, from });
     scene.add(m);
     playTone(220, 0.15, "sawtooth", 0.15);
   } else {
@@ -1992,7 +2052,7 @@ function bossThrow(){
     const vel = target.clone().sub(hand).normalize().multiplyScalar(def.projSpeed);
     const m = new THREE.Mesh(look.geo, look.mat);
     m.position.copy(hand);
-    projs.push({ mesh:m, vel, life:4, grav:0, dmg:def.projDmg, color:look.color, spin:false });
+    projs.push({ mesh:m, vel, life:4, grav:0, dmg:def.projDmg, color:look.color, spin:false, from });
     scene.add(m);
     playTone(look.tone, 0.12, "sawtooth", 0.14);
   }
@@ -2010,7 +2070,7 @@ function updateProjs(dt){
       Math.abs(p.z-player.pos.z) < 0.9 &&
       p.y > player.pos.y - 0.3 && p.y < player.pos.y + 2.0;
     if (hitPlayer){
-      damagePlayer(r.dmg, boss.pos);
+      damagePlayer(r.dmg, r.from);
       spawnParticles(p, r.color, 6, 3);
       scene.remove(r.mesh); projs.splice(i,1); continue;
     }
@@ -2021,38 +2081,70 @@ function updateProjs(dt){
   }
 }
 
-function bossTeleport(){
-  spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1.5,0)), 0xd93a2b, 14, 5);
+function bossTeleport(b){
+  spawnParticles(b.pos.clone().add(new THREE.Vector3(0,1.5,0)), b.def.color, 14, 5);
   const ang = Math.random()*Math.PI*2;
   let sx = Math.round(player.pos.x + Math.cos(ang)*6);
   let sz = Math.round(player.pos.z + Math.sin(ang)*6);
   sx = Math.max(2, Math.min(WORLD-3, sx));
   sz = Math.max(2, Math.min(WORLD-3, sz));
-  boss.pos.set(sx+0.5, terrainH(sx,sz)+1.05, sz+0.5);
-  boss.vy = 0;
-  spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1.5,0)), 0xd93a2b, 14, 5);
+  b.pos.set(sx+0.5, terrainH(sx,sz)+1.05, sz+0.5);
+  b.vy = 0;
+  spawnParticles(b.pos.clone().add(new THREE.Vector3(0,1.5,0)), b.def.color, 14, 5);
   playTeleport();
 }
 
+/* Loop utama: urus spawn & UI, lalu perbarui tiap boss yang aktif. */
 function updateBoss(dt, time){
-  if (boss.allDead) return; // semua boss kalah — tidak ada spawn lagi
-  if (!boss.alive){
-    if (playing && !player.dead){
-      boss.spawnTimer -= dt;
-      if (boss.spawnTimer <= 0){
-        // boss langit menunggu pagi/siang; boss hantu menunggu malam
-        const nextDef = BOSS_TYPES[BOSS_ROSTER[boss.idx]];
-        if ((!nextDef.needsDay || curDayAmt > 0.5) &&
-            (!nextDef.needsNight || curDayAmt < 0.5)) spawnBoss();
+  if (prog.warnT > 0){
+    prog.warnT -= dt;
+    if (prog.warnT <= 0) bosswarn.style.display = "none";
+  }
+  // spawn boss berikutnya (hanya mode satu-satu)
+  if (!prog.allMode && !prog.allDead && bosses.length === 0 && playing && !player.dead){
+    prog.spawnTimer -= dt;
+    if (prog.spawnTimer <= 0){
+      // boss langit menunggu pagi/siang hari
+      const nextDef = BOSS_TYPES[BOSS_ROSTER[prog.idx]];
+      if (!nextDef.needsDay || curDayAmt > 0.5) spawnBoss(BOSS_ROSTER[prog.idx]);
+    }
+  }
+  for (let i=bosses.length-1; i>=0; i--){
+    const b = bosses[i];
+    if (updateBossOne(b, dt, time)){   // true = boss selesai mati
+      scene.remove(b.group);
+      bosses.splice(i, 1);
+      prog.kills++;
+      if (prog.allMode){
+        if (bosses.length === 0){ prog.allDead = true; showWin(); }
+      } else if (prog.idx < BOSS_ROSTER.length - 1){
+        prog.idx++;
+        prog.spawnTimer = 25;
+      } else {
+        prog.allDead = true;
+        showWin();
       }
     }
-    return;
   }
-  if (boss.warnT > 0){
-    boss.warnT -= dt;
-    if (boss.warnT <= 0) bosswarn.style.display = "none";
+  updateBossBar();
+}
+/* Bilah HP menampilkan boss terdekat yang masih hidup. */
+function updateBossBar(){
+  let best = null, bestD = Infinity;
+  for (const b of bosses){
+    if (b.dying) continue;
+    const d = Math.hypot(b.pos.x-player.pos.x, b.pos.z-player.pos.z);
+    if (d < bestD){ bestD = d; best = b; }
   }
-
+  if (!best){ bossbar.style.display = "none"; return; }
+  bossbar.style.display = "block";
+  bossnameEl.textContent = prog.allMode
+    ? best.def.name + "  (" + bosses.length + " boss tersisa)"
+    : best.def.name;
+  bosshpfill.style.width = Math.max(0, best.hp/best.maxHp*100) + "%";
+}
+/* Perbarui satu boss. Mengembalikan true bila animasi matinya selesai. */
+function updateBossOne(boss, dt, time){
   if (boss.dying){
     boss.dieT -= dt;
     boss.group.rotation.x = (1.2-boss.dieT)/1.2 * (Math.PI/2);
@@ -2061,20 +2153,7 @@ function updateBoss(dt, time){
     boss.group.position.copy(boss.pos);
     if (boss.dieT <= 0.6 && boss.dieT + dt > 0.6)
       spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), boss.def.color, 24, 6);
-    if (boss.dieT <= 0){
-      scene.remove(boss.group);
-      boss.alive = false;
-      boss.kills++;
-      bossbar.style.display = "none";
-      if (boss.idx < BOSS_ROSTER.length - 1){
-        boss.idx++;
-        boss.spawnTimer = 25;
-      } else {
-        boss.allDead = true;
-        showWin();
-      }
-    }
-    return;
+    return boss.dieT <= 0;
   }
 
   const def = boss.def;
@@ -2154,7 +2233,7 @@ function updateBoss(dt, time){
     // ATURAN: boss laut mati jika ke darat (terdampar = HP terkuras cepat)
     if (terrainH(boss.pos.x, boss.pos.z) >= WATER_LEVEL){
       boss.beachT = (boss.beachT || 0) + dt;
-      hurtBoss(boss.maxHp * 0.25 * dt);
+      hurtBoss(boss, boss.maxHp * 0.25 * dt);
       if (Math.random() < dt*6)
         spawnParticles(boss.pos.clone().add(new THREE.Vector3(0,1,0)), 0x3b8bd4, 3, 2);
     } else boss.beachT = 0;
@@ -2165,8 +2244,8 @@ function updateBoss(dt, time){
       const tx = boss.pos.x + nx*def.speed*dt;
       const tz = boss.pos.z + nz*def.speed*dt;
       let blocked = false;
-      if (!bCollides(tx, boss.pos.y, boss.pos.z)) boss.pos.x = tx; else blocked = true;
-      if (!bCollides(boss.pos.x, boss.pos.y, tz)) boss.pos.z = tz; else blocked = true;
+      if (!bCollides(def, tx, boss.pos.y, boss.pos.z)) boss.pos.x = tx; else blocked = true;
+      if (!bCollides(def, boss.pos.x, boss.pos.y, tz)) boss.pos.z = tz; else blocked = true;
       if (blocked && boss.onGround) boss.vy = 8.5;
       moving = 1;
     }
@@ -2183,7 +2262,7 @@ function updateBoss(dt, time){
     // gravitasi
     boss.vy -= 22*dt;
     const ny = boss.pos.y + boss.vy*dt;
-    if (!bCollides(boss.pos.x, ny, boss.pos.z)){
+    if (!bCollides(def, boss.pos.x, ny, boss.pos.z)){
       boss.pos.y = ny; boss.onGround = false;
     } else {
       if (boss.vy < 0) boss.onGround = true;
@@ -2214,19 +2293,19 @@ function updateBoss(dt, time){
       boss.projCd <= 0 && boss.attackT <= 0){
     boss.projCd = def.projCd;
     if (def.burst > 1){ boss.burstLeft = def.burst; boss.burstT = 0; }
-    else bossThrow();
+    else bossThrow(boss);
   }
   if (boss.burstLeft > 0){
     boss.burstT -= dt;
     if (boss.burstT <= 0){
-      bossThrow();
+      bossThrow(boss);
       boss.burstLeft--; boss.burstT = 0.22;
     }
   }
-  // teleport (khusus Mojang)
+  // teleport (Mojang, Shadow, Ninja)
   if (def.canTeleport && engaged && boss.teleCd <= 0 && dist > 9){
     boss.teleCd = 7;
-    bossTeleport();
+    bossTeleport(boss);
   }
 
   // animasi
@@ -2247,6 +2326,12 @@ function updateBoss(dt, time){
   boss.group.rotation.y = Math.atan2(dx, dz);
   boss.group.position.copy(boss.pos);
 
+  // naga pelangi: warna tubuh terus berputar sepanjang spektrum
+  if (def.rainbow){
+    boss.flashMats.forEach((m, i) =>
+      m.color.setHSL((time*0.35 + i*0.18) % 1, 0.95, 0.55));
+    rbowMat.color.setHSL((time*0.9) % 1, 1, 0.6);
+  }
   // efek kena tembak: menyala merah lewat emissive (warna asli aman)
   if (boss.hurtT > 0){
     boss.hurtT -= dt;
@@ -2255,7 +2340,7 @@ function updateBoss(dt, time){
   } else {
     for (const m of boss.flashMats) if (m.emissive.r !== 0) m.emissive.setRGB(0,0,0);
   }
-  bosshpfill.style.width = Math.max(0, boss.hp/boss.maxHp*100) + "%";
+  return false;
 }
 
 /* ============================================================
@@ -2319,23 +2404,26 @@ function shoot(){
   const vHit = raycast(RANGE);
   const vT = vHit ? vHit.t : Infinity;
 
-  // uji tembakan langsung ke mesh boss (akurat mengikuti bentuk & rotasi)
-  let bT = Infinity, bPoint = null, headshot = false;
-  if (boss.alive && !boss.dying && boss.group){
-    gunRay.set(o, dir);
-    gunRay.far = RANGE;
-    const hits = gunRay.intersectObject(boss.group, true);
-    if (hits.length > 0){
+  // uji tembakan ke mesh tiap boss (akurat mengikuti bentuk & rotasi);
+  // yang terkena adalah boss terdekat di garis tembak
+  let bT = Infinity, bPoint = null, headshot = false, bHit = null;
+  gunRay.set(o, dir);
+  gunRay.far = RANGE;
+  for (const b of bosses){
+    if (b.dying) continue;
+    const hits = gunRay.intersectObject(b.group, true);
+    if (hits.length > 0 && hits[0].distance < bT){
       bT = hits[0].distance;
       bPoint = hits[0].point;
       headshot = hits[0].object.userData.head === true;
+      bHit = b;
     }
   }
 
   let end;
-  if (bT <= vT + 0.05 && bT < RANGE){
+  if (bHit && bT <= vT + 0.05 && bT < RANGE){
     end = bPoint;
-    hurtBoss(headshot ? 16 : 8, bPoint);
+    hurtBoss(bHit, headshot ? 16 : 8, bPoint);
     playHit();
   } else if (vHit){
     end = o.clone().addScaledVector(dir, Math.min(vT, RANGE));
@@ -2409,7 +2497,7 @@ if (isTouch){
   renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5));
 }
 
-function startGame(){
+function startGame(allMode){
   try{ if (audio().resume) audio().resume(); }catch(e){}
   menu.style.display = "none";
   crosshair.style.display = "block";
@@ -2423,8 +2511,14 @@ function startGame(){
     if (canvas.requestPointerLock) canvas.requestPointerLock();
   }
   playing = true;
+  // MODE SEMUA BOSS: seluruh roster muncul sekaligus, tanpa spawn bertahap
+  if (allMode && !prog.allMode){
+    prog.allMode = true;
+    spawnAllBosses();
+  }
 }
-document.getElementById("playBtn").addEventListener("click", startGame);
+document.getElementById("playBtn").addEventListener("click", () => startGame(false));
+document.getElementById("allBossBtn").addEventListener("click", () => startGame(true));
 
 document.addEventListener("pointerlockchange", () => {
   pointerLocked = document.pointerLockElement === canvas;
@@ -2760,8 +2854,9 @@ function loop(now){
     "<br>Item: " + itemName +
     (player.fly ? "<br>\u2708 Mode Terbang: ON" : "") +
     (runMult > 1 ? "<br>\u26a1 Kecepatan Lari: x" + runMult : "") +
-    "<br>Boss dikalahkan: " + boss.kills + " / " + BOSS_ROSTER.length +
-    (boss.allDead ? " \u2705 MENANG!" : "");
+    "<br>Boss dikalahkan: " + prog.kills + " / " + BOSS_ROSTER.length +
+    (prog.allMode ? " (MODE SEMUA BOSS)" : "") +
+    (prog.allDead ? " \u2705 MENANG!" : "");
   if (item.kind === "gun"){
     ammoEl.style.display = playing ? "block" : "none";
     ammoEl.textContent = gun.reloading > 0 ? "ISI ULANG..." : ("\uD83D\uDD2B " + gun.ammo + " / " + gun.mag);
